@@ -1,0 +1,2147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>🏐 Marcador Voleibol · FIVB VNL (8 sustituciones) · Líberos</title>
+    <style>
+        /* Variables del sistema GED */
+        :root {
+            --primary-purple: #8e24ad;
+            --dark-purple: #5c2273;
+            --light-purple: #9b49b6;
+            --accent-blue: #2980b9;
+            --text-white: #ffffff;
+            --text-light: rgba(255,255,255,0.95);
+            --bg-light: #f8f9fa;
+            --border-thickness: 2px;
+            --focus-outline: 3px solid #3498db;
+            --touch-target-min: 48px;
+            --touch-target-ideal: 56px;
+            --switch-width: 50px;
+            --switch-height: 24px;
+            --switch-padding: 3px;
+            --libero-bg: #2d3748;
+            --libero-text: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-light);
+            padding: 12px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .app-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            background: white;
+            border-radius: 32px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+            padding: 20px;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .app-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: var(--border-thickness) solid #e9ecef;
+        }
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .app-header svg {
+            width: 48px;
+            height: 48px;
+        }
+        .app-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--dark-purple);
+            margin: 0;
+        }
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+        .badge-primary { background: var(--primary-purple); color: white; }
+        .badge-warning { background: #f59e0b; color: white; }
+        
+        .btn {
+            border: none;
+            border-radius: 40px;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            margin: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            min-height: var(--touch-target-min);
+            border: var(--border-thickness) solid transparent;
+        }
+        .btn-primary { background: var(--primary-purple); color: white; }
+        .btn-danger { background: #dc2626; color: white; }
+        .btn-success { background: #16a34a; color: white; }
+        .btn-warning { background: #f59e0b; color: white; }
+        .btn-info { background: var(--accent-blue); color: white; }
+        .btn-outline { background: white; border: var(--border-thickness) solid var(--primary-purple); color: var(--primary-purple); }
+        .btn-sm { padding: 8px 16px; font-size: 0.9rem; min-height: var(--touch-target-min); }
+        .btn:active { transform: scale(0.97); }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .btn:focus {
+            outline: var(--focus-outline);
+            outline-offset: 2px;
+        }
+        
+        .marcador-equipo {
+            cursor: pointer;
+            transition: 0.1s;
+            user-select: none;
+            position: relative;
+        }
+        .marcador-equipo:active {
+            transform: scale(0.95);
+        }
+        .saque-indicator {
+            font-size: 1.5rem;
+            margin-left: 8px;
+            display: inline-block;
+        }
+        
+        .equipo-card {
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 20px;
+            background: #f8fafc;
+            border: var(--border-thickness) solid #e2e8f0;
+        }
+        .equipo-a { border-left: 8px solid var(--primary-purple); }
+        .equipo-b { border-left: 8px solid var(--accent-blue); }
+        
+        .puntos-equipo {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+        .punto-num {
+            background: var(--dark-purple);
+            color: white;
+            border-radius: 30px;
+            padding: 10px 30px;
+            font-size: 4rem;
+            min-width: 150px;
+            text-align: center;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .cancha-container {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .equipo-cancha {
+            flex: 1;
+            background: #e8f0fe;
+            border-radius: 20px;
+            padding: 15px;
+        }
+        .fila-delantera, .fila-zaguera {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin: 8px 0;
+        }
+        .fila-delantera .posicion-card {
+            background: #bbdefb;
+            border: var(--border-thickness) solid var(--accent-blue);
+        }
+        .fila-zaguera .posicion-card {
+            background: #c8e6c9;
+            border: var(--border-thickness) solid var(--primary-purple);
+        }
+        .posicion-card {
+            border-radius: 14px;
+            padding: 8px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            font-size: 0.9rem;
+            position: relative;
+            cursor: pointer;
+            transition: 0.1s;
+        }
+        .posicion-card:active {
+            transform: scale(0.98);
+        }
+        .pos-num {
+            font-weight: 700;
+            color: var(--dark-purple);
+            font-size: 1.1rem;
+        }
+        /* Estilo para líbero */
+        .posicion-card.libero {
+            background: var(--libero-bg) !important;
+            color: var(--libero-text);
+            border: 2px solid #fbbf24;
+        }
+        .posicion-card.libero .pos-num,
+        .posicion-card.libero .player-name-click {
+            color: var(--libero-text);
+        }
+        .posicion-card.libero .card-icon {
+            color: #ffd966;
+        }
+        .label-fila {
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin: 5px 0;
+            color: #334155;
+        }
+        
+        .card-icon {
+            font-size: 1.2rem;
+            margin-left: 4px;
+            cursor: pointer;
+            display: inline-block;
+            transition: 0.2s;
+        }
+        .card-icon:hover {
+            transform: scale(1.2);
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 12px;
+            background: #e2e8f0;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            min-height: var(--touch-target-min);
+            border: var(--border-thickness) solid transparent;
+        }
+        .tab.active {
+            background: var(--primary-purple);
+            color: white;
+        }
+        .tab:focus {
+            outline: var(--focus-outline);
+            outline-offset: 2px;
+        }
+        .panel { display: none; }
+        .panel.active { display: block; }
+        
+        .input-group {
+            margin-bottom: 16px;
+        }
+        label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 5px;
+            color: #334155;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 14px;
+            border-radius: 16px;
+            border: var(--border-thickness) solid #cbd5e1;
+            font-size: 1rem;
+            background: white;
+            min-height: var(--touch-target-min);
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: var(--focus-outline);
+            outline-offset: 2px;
+        }
+        textarea {
+            min-height: 100px;
+            font-family: monospace;
+        }
+        
+        .tabla-jugadores {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        .tabla-jugadores th {
+            background: #e2e8f0;
+            padding: 10px;
+            text-align: left;
+        }
+        .tabla-jugadores td {
+            padding: 8px;
+            border-bottom: 1px solid #cbd5e1;
+        }
+        .tabla-jugadores input, .tabla-jugadores select {
+            padding: 8px;
+            width: 100%;
+        }
+        .tabla-jugadores input[type="checkbox"] {
+            width: auto;
+            transform: scale(1.2);
+            margin: 0 auto;
+            display: block;
+        }
+        .btn-agregar {
+            margin: 10px 0;
+        }
+        
+        .text-muted { color: #64748b; font-size: 0.9rem; }
+        .mt-4 { margin-top: 20px; }
+        .mb-2 { margin-bottom: 8px; }
+        .text-center { text-align: center; }
+        
+        .btn-undo {
+            background: #f97316;
+            color: white;
+            font-size: 1.2rem;
+            padding: 15px 30px;
+            border-radius: 50px;
+            border: var(--border-thickness) solid transparent;
+        }
+        .btn-undo:focus {
+            outline: var(--focus-outline);
+            outline-offset: 2px;
+        }
+        
+        .tiempo-info {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 10px;
+        }
+        .tiempo-badge {
+            background: var(--dark-purple);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        /* Animación moneda */
+        #moneda-container.girando {
+            animation: girar 0.2s infinite linear;
+        }
+        @keyframes girar {
+            0% { transform: rotateY(0deg); }
+            100% { transform: rotateY(360deg); }
+        }
+
+        /* Indicador de sets */
+        .sets-info {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 10px 0;
+            font-size: 1.2rem;
+        }
+        .sets-badge {
+            background: #f59e0b;
+            color: white;
+            padding: 5px 20px;
+            border-radius: 30px;
+        }
+
+        /* Celebración final */
+        .celebracion {
+            margin: 20px 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #f9f3d9, #fce2b1);
+            border-radius: 50px;
+            text-align: center;
+            animation: aparecer 0.8s ease;
+            border: var(--border-thickness) solid gold;
+            box-shadow: 0 0 20px gold;
+        }
+        @keyframes aparecer {
+            0% { opacity: 0; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        .celebracion h2 {
+            font-size: 2.5rem;
+            color: #b45309;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 0 #ffd700;
+        }
+        .celebracion .equipo-ganador {
+            font-size: 3rem;
+            font-weight: 800;
+            background: white;
+            display: inline-block;
+            padding: 10px 30px;
+            border-radius: 60px;
+            margin: 15px 0;
+            box-shadow: 0 5px 0 #b45309;
+            border: var(--border-thickness) solid var(--primary-purple);
+        }
+        .celebracion .emoji-fiesta {
+            font-size: 3rem;
+            animation: rebotar 0.6s infinite alternate;
+        }
+        @keyframes rebotar {
+            from { transform: translateY(0); }
+            to { transform: translateY(-15px); }
+        }
+        .serpentina {
+            position: relative;
+            height: 50px;
+            overflow: hidden;
+        }
+        .serpentina span {
+            position: absolute;
+            width: 10px;
+            height: 30px;
+            background: #ff6b6b;
+            opacity: 0.7;
+            animation: caer 2s infinite;
+        }
+        @keyframes caer {
+            0% { transform: translateY(-50px) rotate(0deg); }
+            100% { transform: translateY(50px) rotate(360deg); }
+        }
+        .serpentina span:nth-child(1) { left: 10%; background: #f9ca24; animation-delay: 0s; width: 8px; }
+        .serpentina span:nth-child(2) { left: 30%; background: #f0932b; animation-delay: 0.3s; width: 12px; }
+        .serpentina span:nth-child(3) { left: 50%; background: #eb4d4b; animation-delay: 0.6s; width: 6px; }
+        .serpentina span:nth-child(4) { left: 70%; background: #6ab04c; animation-delay: 0.9s; width: 14px; }
+        .serpentina span:nth-child(5) { left: 90%; background: #22a6b3; animation-delay: 1.2s; width: 10px; }
+
+        /* Vidrio */
+        .marcador-vidrio {
+            background: #fbbf24 !important;
+            color: black !important;
+            box-shadow: 0 0 20px #fbbf24;
+            transition: all 0.3s ease;
+        }
+        .vidrio-texto {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #b45309;
+            margin-top: 5px;
+            animation: parpadeo 1s infinite;
+        }
+        @keyframes parpadeo {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* Switches */
+        .switch-container {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #f1f5f9;
+            padding: 4px 10px;
+            border-radius: 30px;
+            border: var(--border-thickness) solid var(--primary-purple);
+            white-space: nowrap;
+        }
+        .switch-label {
+            font-weight: 600;
+            color: var(--dark-purple);
+            font-size: 0.85rem;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: var(--switch-width);
+            height: var(--switch-height);
+            flex-shrink: 0;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .3s;
+            border-radius: var(--switch-height);
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: calc(var(--switch-height) - 2*var(--switch-padding));
+            width: calc(var(--switch-height) - 2*var(--switch-padding));
+            left: var(--switch-padding);
+            bottom: var(--switch-padding);
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: var(--primary-purple);
+        }
+        input:checked + .slider:before {
+            transform: translateX(calc(var(--switch-width) - var(--switch-height)));
+        }
+        input:focus + .slider {
+            outline: var(--focus-outline);
+            outline-offset: 2px;
+        }
+        .switch-value {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--dark-purple);
+            min-width: 30px;
+            text-align: right;
+        }
+
+        .info-line {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        /* Menú de sustituciones */
+        .subs-menu {
+            position: absolute;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            min-width: 180px;
+            max-height: 250px;
+            overflow-y: auto;
+            padding: 5px 0;
+        }
+        .subs-menu-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background 0.1s;
+            border-bottom: 1px solid #eee;
+            font-size: 0.9rem;
+        }
+        .subs-menu-item:last-child {
+            border-bottom: none;
+        }
+        .subs-menu-item:hover {
+            background: #f0f0f0;
+        }
+        .subs-menu-item.libero-exchange {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+        }
+        .subs-menu-item.libero-replace {
+            background: #d9f0ff;
+            border-left: 4px solid var(--accent-blue);
+        }
+
+        /* Modal personalizado */
+        .custom-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            backdrop-filter: blur(4px);
+        }
+        .modal-content {
+            background: white;
+            border-radius: 32px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 24px;
+            text-align: left;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.2);
+            animation: modalEntrada 0.2s ease;
+            border-top: 6px solid var(--primary-purple);
+        }
+        .modal-content h3 {
+            color: var(--dark-purple);
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        .modal-content ul, .modal-content p {
+            margin-bottom: 0.8rem;
+            line-height: 1.4;
+        }
+        .modal-content li {
+            margin-left: 1.5rem;
+            margin-bottom: 0.3rem;
+        }
+        @keyframes modalEntrada {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .modal-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 16px;
+            text-align: center;
+        }
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--dark-purple);
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        .modal-message {
+            font-size: 1rem;
+            color: #2d3748;
+            line-height: 1.4;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 20px;
+        }
+        .modal-btn {
+            background: var(--primary-purple);
+            color: white;
+            border: none;
+            border-radius: 40px;
+            padding: 10px 20px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+            min-width: 100px;
+        }
+        .modal-btn-cancel {
+            background: #6c757d;
+        }
+        .modal-btn:hover {
+            filter: brightness(0.9);
+        }
+        .libero-counter {
+            font-size: 0.8rem;
+            color: var(--dark-purple);
+            margin-top: 5px;
+            text-align: center;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <div class="app-header">
+        <div class="header-title">
+            <svg viewBox="0 0 100 100" width="48" height="48">
+                <circle cx="50" cy="50" r="45" fill="#f9b81b" stroke="var(--dark-purple)" stroke-width="3"/>
+                <path d="M20 30 Q 50 10, 80 30" stroke="var(--dark-purple)" stroke-width="4" fill="none"/>
+                <path d="M20 70 Q 50 90, 80 70" stroke="var(--dark-purple)" stroke-width="4" fill="none"/>
+                <path d="M30 20 Q 50 50, 70 20" stroke="var(--dark-purple)" stroke-width="4" fill="none"/>
+                <path d="M30 80 Q 50 50, 70 80" stroke="var(--dark-purple)" stroke-width="4" fill="none"/>
+                <circle cx="50" cy="50" r="8" fill="var(--dark-purple)"/>
+            </svg>
+            <h1>Marcador Voleibol · FIVB VNL (8 sustituciones) · Líberos</h1>
+        </div>
+        <button class="btn btn-info btn-sm" id="btn-ayuda">❓ Ayuda</button>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" data-panel="juego">🏐 Juego</div>
+        <div class="tab" data-panel="config">⚙️ Configuración</div>
+        <div class="tab" data-panel="export">📤 Exportar/Importar</div>
+    </div>
+
+    <!-- PANEL JUEGO -->
+    <div id="panel-juego" class="panel active">
+        <div class="info-line">
+            <span class="badge badge-primary" id="set-info">Set 1/5</span>
+            <span class="badge badge-warning" id="sustA">A: 0/8</span>
+            <span class="badge badge-warning" id="sustB">B: 0/8</span>
+            <div class="switch-container">
+                <span class="switch-label">Pts</span>
+                <label class="switch"><input type="checkbox" id="switch-puntos"><span class="slider"></span></label>
+                <span class="switch-value" id="puntos-valor">25</span>
+            </div>
+            <div class="switch-container">
+                <span class="switch-label">Sets</span>
+                <label class="switch"><input type="checkbox" id="switch-sets"><span class="slider"></span></label>
+                <span class="switch-value" id="sets-valor">5</span>
+            </div>
+        </div>
+        <div class="sets-info">
+            <span class="sets-badge" id="setsA">🏆 A: 0</span>
+            <span class="sets-badge" id="setsB">🏆 B: 0</span>
+        </div>
+        <div class="tiempo-info">
+            <span class="tiempo-badge" id="tiemposA">⏸️ Tiempos A: 0/2</span>
+            <span class="tiempo-badge" id="tiemposB">⏸️ Tiempos B: 0/2</span>
+        </div>
+
+        <div class="puntos-equipo">
+            <div class="punto-num marcador-equipo" id="marcadorA" data-equipo="A">0<span class="saque-indicator" id="saqueA"></span></div>
+            <div style="font-size: 3rem;">-</div>
+            <div class="punto-num marcador-equipo" id="marcadorB" data-equipo="B">0<span class="saque-indicator" id="saqueB"></span></div>
+        </div>
+
+        <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 20px;">
+            <button class="btn btn-info btn-sm" id="tiempoA">⏸️ Tiempo A</button>
+            <button class="btn btn-info btn-sm" id="tiempoB">⏸️ Tiempo B</button>
+        </div>
+
+        <!-- Cancha -->
+        <div class="cancha-container">
+            <div class="equipo-cancha equipo-a">
+                <h4 style="text-align: center; margin-bottom: 10px;"><span id="nombreA">Equipo A</span></h4>
+                <div class="label-fila">🔺 Delanteros (2,3,4)</div>
+                <div class="fila-delantera" id="delanteraA"></div>
+                <div class="label-fila">🔻 Zagueros (1,6,5)</div>
+                <div class="fila-zaguera" id="zagueraA"></div>
+            </div>
+            <div class="equipo-cancha equipo-b">
+                <h4 style="text-align: center; margin-bottom: 10px;"><span id="nombreB">Equipo B</span></h4>
+                <div class="label-fila">🔺 Delanteros (2,3,4)</div>
+                <div class="fila-delantera" id="delanteraB"></div>
+                <div class="label-fila">🔻 Zagueros (1,6,5)</div>
+                <div class="fila-zaguera" id="zagueraB"></div>
+            </div>
+        </div>
+
+        <div class="text-center mt-3">
+            <button class="btn btn-primary" id="lanzar-moneda">🪙 Lanzar moneda</button>
+            <div id="moneda-container" style="margin-top: 10px; font-size: 3rem; min-height: 80px;">🪙</div>
+            <div id="resultado-moneda" style="font-size: 1.5rem;"></div>
+        </div>
+
+        <div class="text-center mt-4">
+            <button class="btn btn-undo" id="deshacer-punto">↩️ Deshacer último punto</button>
+            <button class="btn btn-success" id="nuevo-set">🎯 Finalizar set / Nuevo set</button>
+            <button class="btn btn-outline" id="reiniciar-partido">🔄 Reiniciar partido</button>
+        </div>
+
+        <div id="celebracion-final" class="celebracion" style="display: none;">
+            <div class="serpentina"><span></span><span></span><span></span><span></span><span></span></div>
+            <h2>🎉 ¡FELICITACIONES! 🎉</h2>
+            <div class="equipo-ganador" id="equipo-ganador-nombre">Equipo</div>
+            <div class="emoji-fiesta">🏆🏆🏆</div>
+            <div class="serpentina"><span></span><span></span><span></span><span></span><span></span></div>
+        </div>
+    </div>
+
+    <!-- PANEL CONFIGURACIÓN -->
+    <div id="panel-config" class="panel">
+        <h2>⚙️ Configurar Partido</h2>
+        <p class="text-muted">Los primeros 6 jugadores deben tener posiciones únicas (1-6). Los demás serán suplentes. <br> <strong>Líbero:</strong> Máximo 2 por equipo (pueden ser titulares o suplentes). El cambio entre líberos y las sustituciones libero-zaguero son gratuitas (no consumen sustituciones).</p>
+        <h3>Equipo A (máx. 15 jugadores)</h3>
+        <div class="input-group">
+            <label>Nombre del equipo A:</label>
+            <input type="text" id="config-nombreA" placeholder="Ej: Águilas" value="Águilas">
+        </div>
+        <div id="jugadoresA-container">
+            <table class="tabla-jugadores" id="tabla-jugadoresA">
+                <thead>
+                    <tr><th>Nombre</th><th># Camiseta</th><th>Posición (1-6)</th><th>Líbero</th><th></th> </thead>
+                <tbody id="tbodyA"></tbody>
+             </table>
+            <div id="libero-counter-A" class="libero-counter">Líberos seleccionados: 0/2</div>
+        </div>
+        <button class="btn btn-info btn-sm btn-agregar" id="agregarJugadorA">➕ Agregar jugador a A (hasta 15)</button>
+
+        <h3 class="mt-4">Equipo B (máx. 15 jugadores)</h3>
+        <div class="input-group">
+            <label>Nombre del equipo B:</label>
+            <input type="text" id="config-nombreB" value="Leones">
+        </div>
+        <div id="jugadoresB-container">
+            <table class="tabla-jugadores" id="tabla-jugadoresB">
+                <thead>
+                    <tr><th>Nombre</th><th># Camiseta</th><th>Posición (1-6)</th><th>Líbero</th><th></th> </thead>
+                <tbody id="tbodyB"></tbody>
+             </table>
+            <div id="libero-counter-B" class="libero-counter">Líberos seleccionados: 0/2</div>
+        </div>
+        <button class="btn btn-info btn-sm btn-agregar" id="agregarJugadorB">➕ Agregar jugador a B (hasta 15)</button>
+
+        <div class="input-group mt-4">
+            <label>Set inicial:</label>
+            <input type="number" id="config-set" value="1" min="1" max="5">
+        </div>
+        <div class="text-center">
+            <button class="btn btn-success" id="guardar-config">💾 Guardar y volver al juego</button>
+        </div>
+    </div>
+
+    <!-- PANEL EXPORTAR/IMPORTAR -->
+    <div id="panel-export" class="panel">
+        <h2>📤 Exportar / Importar</h2>
+        <p class="text-muted">Guarda el partido en un archivo JSON para luego subirlo al sistema central.</p>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;">
+            <button class="btn btn-primary" id="exportar-json">📥 Exportar a JSON</button>
+            <button class="btn btn-info" id="importar-json">📤 Importar desde JSON</button>
+        </div>
+        <input type="file" id="import-file" accept=".json" style="display: none;">
+        <hr>
+        <h3>Vista previa del JSON actual:</h3>
+        <pre id="json-preview" style="background: #f1f5f9; padding: 10px; border-radius: 12px; overflow: auto; max-height: 200px; font-size: 0.8rem;"></pre>
+    </div>
+</div>
+
+<div id="cardMenu" style="display: none; position: absolute; background: white; border: 1px solid #ccc; border-radius: 8px; padding: 5px 0; box-shadow: 0 2px 10px rgba(0,0,0,0.2); z-index: 9999;">
+    <div style="padding: 8px 16px; cursor: pointer;" onclick="seleccionarTarjeta('yellow')">🟡 Amarilla</div>
+    <div style="padding: 8px 16px; cursor: pointer;" onclick="seleccionarTarjeta('red')">🔴 Roja</div>
+    <div style="padding: 8px 16px; cursor: pointer;" onclick="seleccionarTarjeta('expulsion')">🟡+🔴 Expulsión</div>
+    <div style="padding: 8px 16px; cursor: pointer;" onclick="seleccionarTarjeta('disqualification')">🟥 Descalificar</div>
+</div>
+
+<script>
+(function() {
+    // ======================= MODAL PERSONALIZADO =======================
+    function showModal(message, isHtml = false) {
+        return new Promise((resolve) => {
+            const existing = document.querySelector('.custom-modal');
+            if (existing) existing.remove();
+
+            const modal = document.createElement('div');
+            modal.className = 'custom-modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-icon">
+                        <svg viewBox="0 0 100 100" width="60" height="60">
+                            <circle cx="50" cy="50" r="45" fill="#f9b81b" stroke="var(--dark-purple)" stroke-width="3"/>
+                            <path d="M30 20 L70 20 L60 45 L80 55 L60 65 L70 90 L50 75 L30 90 L40 65 L20 55 L40 45 Z" fill="none" stroke="var(--dark-purple)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                            <circle cx="50" cy="50" r="28" fill="none" stroke="var(--dark-purple)" stroke-width="3"/>
+                            <path d="M50 22 L50 78 M22 50 L78 50 M35 35 L65 65 M35 65 L65 35" stroke="var(--dark-purple)" stroke-width="3"/>
+                        </svg>
+                    </div>
+                    <div class="modal-title">MARCADOR</div>
+                    <div class="modal-message">${isHtml ? message : escapeHtml(message)}</div>
+                    <div class="modal-buttons">
+                        <button class="modal-btn">Aceptar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            const closeBtn = modal.querySelector('.modal-btn');
+            const closeModal = () => {
+                modal.remove();
+                resolve();
+            };
+            closeBtn.addEventListener('click', closeModal);
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeModal();
+            });
+        });
+    }
+
+    function showConfirm(message) {
+        return new Promise((resolve) => {
+            const existing = document.querySelector('.custom-modal');
+            if (existing) existing.remove();
+
+            const modal = document.createElement('div');
+            modal.className = 'custom-modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-icon">
+                        <svg viewBox="0 0 100 100" width="60" height="60">
+                            <circle cx="50" cy="50" r="45" fill="#f9b81b" stroke="var(--dark-purple)" stroke-width="3"/>
+                            <path d="M30 20 L70 20 L60 45 L80 55 L60 65 L70 90 L50 75 L30 90 L40 65 L20 55 L40 45 Z" fill="none" stroke="var(--dark-purple)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                            <circle cx="50" cy="50" r="28" fill="none" stroke="var(--dark-purple)" stroke-width="3"/>
+                            <path d="M50 22 L50 78 M22 50 L78 50 M35 35 L65 65 M35 65 L65 35" stroke="var(--dark-purple)" stroke-width="3"/>
+                        </svg>
+                    </div>
+                    <div class="modal-title">MARCADOR</div>
+                    <div class="modal-message">${escapeHtml(message)}</div>
+                    <div class="modal-buttons">
+                        <button class="modal-btn modal-btn-cancel">Cancelar</button>
+                        <button class="modal-btn">Aceptar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            const acceptBtn = modal.querySelector('.modal-buttons .modal-btn:last-child');
+            const cancelBtn = modal.querySelector('.modal-btn-cancel');
+            const closeModal = (result) => {
+                modal.remove();
+                resolve(result);
+            };
+            acceptBtn.addEventListener('click', () => closeModal(true));
+            cancelBtn.addEventListener('click', () => closeModal(false));
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeModal(false);
+            });
+        });
+    }
+
+    function escapeHtml(str) {
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+            return c;
+        });
+    }
+
+    window.alert = showModal;
+    window.confirm = showConfirm;
+
+    // ======================= FUNCIÓN PARA MOSTRAR AYUDA =======================
+    async function mostrarAyuda() {
+        const contenido = `
+            <h3>🏐 Funcionalidades básicas</h3>
+            <ul>
+                <li><strong>Anotar punto:</strong> Haz clic en el marcador del equipo (número grande).</li>
+                <li><strong>Sustituciones:</strong> Haz clic en el nombre del jugador en la cancha. Se abrirá un menú con opciones de cambio (regulares o líbero).</li>
+                <li><strong>Tarjetas:</strong> Haz clic en el ícono 🟨 (o el que corresponda) junto al nombre. Menú: Amarilla, Roja, Expulsión, Descalificación.</li>
+                <li><strong>Tiempos muertos:</strong> Usa los botones "⏸️ Tiempo A/B". Cada equipo tiene 2 por set, 30 segundos.</li>
+                <li><strong>Rotación:</strong> Cuando un equipo gana el punto sin tener el saque, rota automáticamente.</li>
+                <li><strong>Punto de set:</strong> Cuando un equipo está a 1 punto de ganar, el marcador se ilumina (vidrio).</li>
+                <li><strong>Finalizar set:</strong> Si el set no terminó automáticamente, puedes usar "Finalizar set / Nuevo set".</li>
+                <li><strong>Deshacer punto:</strong> El botón "↩️ Deshacer último punto" revierte la última acción de punto o sustitución.</li>
+                <li><strong>Configuración:</strong> En la pestaña "⚙️ Configuración" puedes editar nombres, números, posiciones y líberos.</li>
+                <li><strong>Exportar/Importar:</strong> Guarda el partido en un archivo JSON o cárgalo después.</li>
+                <li><strong>Moneda:</strong> "🪙 Lanzar moneda" decide quién inicia el saque. El resultado muestra solo "Cara" o "Sello".</li>
+                <li><strong>Reglas especiales:</strong> Líberos no pueden atacar en zona delantera (posiciones 2,3,4) ni sacar (posición 1). El cambio entre líberos y el reemplazo líbero-zaguero son gratuitos (no consumen sustituciones).</li>
+                <li><strong>Sustituciones regulares:</strong> Máximo 8 por set. Solo titular ↔ suplente, con posibilidad de retorno (el suplente puede volver a salir por el titular original).</li>
+            </ul>
+            <p><em>Nota: Todos los datos se guardan automáticamente en el navegador. Al recargar la página, el partido se recupera.</em></p>
+        `;
+        await showModal(contenido, true);
+    }
+
+    // ======================= FUNCIÓN PARA ASEGURAR TARJETAS =======================
+    function asegurarTarjetas(jugadores) {
+        jugadores.forEach(jug => {
+            if (!jug.tarjetas) {
+                jug.tarjetas = {
+                    amarillas: 0,
+                    roja: false,
+                    expulsado: false,
+                    descalificado: false
+                };
+            }
+        });
+    }
+
+    // ======================= FUNCIÓN PARA REINICIAR TARJETAS =======================
+    function resetTarjetas(jugadores) {
+        jugadores.forEach(jug => {
+            jug.tarjetas = {
+                amarillas: 0,
+                roja: false,
+                expulsado: false,
+                descalificado: false
+            };
+        });
+    }
+
+    // ======================= ESTRUCTURA CON POSICIONES Y SUSTITUCIONES FIVB =======================
+    let partido = {
+        nombreA: 'Equipo A',
+        nombreB: 'Equipo B',
+        jugadoresA: [],
+        jugadoresB: [],
+        alineacionA: [],
+        alineacionB: [],
+        setActual: 1,
+        puntos: { A: 0, B: 0 },
+        setsGanados: { A: 0, B: 0 },
+        sustituciones: { A: 0, B: 0 },
+        maxSustituciones: 8,
+        tiempos: { A: 0, B: 0 },
+        maxTiempos: 2,
+        saque: 'A',
+        historial: [],
+        substLog: { A: [], B: [] },
+        playerStatus: { A: {}, B: {} },
+        initialAlineacion: { A: [], B: [] },
+        liberoReplacements: { A: {}, B: {} }
+    };
+
+    let totalSets = 5;
+    let puntosPorSet = 25;
+    let tiempoActivo = { A: false, B: false };
+    let intervalos = { A: null, B: null };
+    let currentCardTarget = null;
+
+    const switchPuntos = document.getElementById('switch-puntos');
+    const switchSets = document.getElementById('switch-sets');
+    const puntosValor = document.getElementById('puntos-valor');
+    const setsValor = document.getElementById('sets-valor');
+
+    function actualizarSwitches() {
+        switchPuntos.checked = (puntosPorSet === 21);
+        puntosValor.innerText = puntosPorSet;
+        switchSets.checked = (totalSets === 3);
+        setsValor.innerText = totalSets;
+    }
+
+    async function cambiarFormato(nuevosPuntos, nuevosSets) {
+        if (nuevosPuntos !== puntosPorSet || nuevosSets !== totalSets) {
+            const ok = await confirm('¿Cambiar el formato del partido? Se reiniciará el partido actual.');
+            if (ok) {
+                puntosPorSet = nuevosPuntos;
+                totalSets = nuevosSets;
+                await reiniciar();
+                actualizarSwitches();
+            } else {
+                actualizarSwitches();
+            }
+        }
+    }
+
+    switchPuntos.addEventListener('change', function() {
+        const nuevosPuntos = this.checked ? 21 : 25;
+        let nuevosSets = totalSets;
+        if (this.checked) nuevosSets = 3;
+        cambiarFormato(nuevosPuntos, nuevosSets);
+    });
+    switchSets.addEventListener('change', function() {
+        const nuevosSets = this.checked ? 3 : 5;
+        cambiarFormato(puntosPorSet, nuevosSets);
+    });
+
+    function generarId() { return Date.now() + Math.random().toString(36).substr(2, 5); }
+
+    function initSubstitutionTracking(equipo) {
+        const alineacion = equipo === 'A' ? partido.alineacionA : partido.alineacionB;
+        const status = {};
+        for (let id of alineacion) {
+            if (id) {
+                status[id] = {
+                    isStarter: true,
+                    substitutedOut: false,
+                    substituteIn: false,
+                    pairedWith: null,
+                    substitutionUsed: false
+                };
+            }
+        }
+        const listaJugadores = equipo === 'A' ? partido.jugadoresA : partido.jugadoresB;
+        for (let jug of listaJugadores) {
+            if (!status[jug.id]) {
+                status[jug.id] = {
+                    isStarter: false,
+                    substitutedOut: false,
+                    substituteIn: false,
+                    pairedWith: null,
+                    substitutionUsed: false
+                };
+            }
+        }
+        partido.playerStatus[equipo] = status;
+        partido.substLog[equipo] = [];
+    }
+
+    function initSetSubstitutions() {
+        partido.sustituciones = { A: 0, B: 0 };
+        partido.substLog = { A: [], B: [] };
+        partido.playerStatus = { A: {}, B: {} };
+        partido.initialAlineacion = { A: [...partido.alineacionA], B: [...partido.alineacionB] };
+        initSubstitutionTracking('A');
+        initSubstitutionTracking('B');
+        partido.liberoReplacements = { A: {}, B: {} };
+    }
+
+    function resetSubstitutions() {
+        partido.sustituciones = { A: 0, B: 0 };
+        partido.substLog = { A: [], B: [] };
+        partido.playerStatus = { A: {}, B: {} };
+        partido.initialAlineacion = { A: [], B: [] };
+        partido.liberoReplacements = { A: {}, B: {} };
+    }
+
+    function getJugadorById(equipo, id) {
+        const lista = equipo === 'A' ? partido.jugadoresA : partido.jugadoresB;
+        return lista.find(j => j.id === id) || null;
+    }
+
+    function isLibero(equipo, id) {
+        const jug = getJugadorById(equipo, id);
+        return jug ? (jug.libero === true) : false;
+    }
+
+    function getOtroLibero(equipo, currentId) {
+        const lista = equipo === 'A' ? partido.jugadoresA : partido.jugadoresB;
+        const otros = lista.filter(j => j.libero && j.id !== currentId);
+        return otros.length > 0 ? otros[0] : null;
+    }
+
+    function rotarAlineacion(equipo) {
+        const alin = equipo === 'A' ? partido.alineacionA : partido.alineacionB;
+        if (!alin) return;
+        const first = alin[0];
+        for (let i = 0; i < 5; i++) alin[i] = alin[i+1];
+        alin[5] = first;
+    }
+
+    function guardarHistorial(accion) {
+        partido.historial.push({
+            accion: accion,
+            puntos: { ...partido.puntos },
+            saque: partido.saque,
+            alineacionA: [...partido.alineacionA],
+            alineacionB: [...partido.alineacionB],
+            sustituciones: { ...partido.sustituciones },
+            tiempos: { ...partido.tiempos },
+            substLog: JSON.parse(JSON.stringify(partido.substLog)),
+            playerStatus: JSON.parse(JSON.stringify(partido.playerStatus)),
+            liberoReplacements: JSON.parse(JSON.stringify(partido.liberoReplacements))
+        });
+    }
+
+    async function deshacerUltimaAccion() {
+        if (partidoFinalizado()) { await alert('El partido ya ha finalizado.'); return; }
+        if (partido.historial.length === 0) { await alert('No hay acciones para deshacer'); return; }
+        const ultimo = partido.historial.pop();
+        partido.puntos = { ...ultimo.puntos };
+        partido.saque = ultimo.saque;
+        partido.alineacionA = [...ultimo.alineacionA];
+        partido.alineacionB = [...ultimo.alineacionB];
+        partido.sustituciones = { ...ultimo.sustituciones };
+        partido.tiempos = { ...ultimo.tiempos };
+        partido.substLog = JSON.parse(JSON.stringify(ultimo.substLog));
+        partido.playerStatus = JSON.parse(JSON.stringify(ultimo.playerStatus));
+        partido.liberoReplacements = JSON.parse(JSON.stringify(ultimo.liberoReplacements));
+        guardarPartido();
+        renderAlineacion();
+        actualizarEstadoPartido();
+    }
+
+    function puntosMinimosSetActual() {
+        if (totalSets === 5 && partido.setActual === 5) return 15;
+        if (totalSets === 3 && partido.setActual === 3 && puntosPorSet === 21) return 15;
+        return puntosPorSet;
+    }
+
+    function setPointActivo(equipo) {
+        const puntosEquipo = partido.puntos[equipo];
+        const puntosRival = partido.puntos[equipo === 'A' ? 'B' : 'A'];
+        const puntosMinimos = puntosMinimosSetActual();
+        const ventaja = puntosEquipo - puntosRival;
+        return puntosEquipo >= puntosMinimos && ventaja >= 1;
+    }
+
+    function partidoFinalizado() {
+        const setsParaGanar = Math.ceil(totalSets / 2);
+        return partido.setsGanados.A >= setsParaGanar || partido.setsGanados.B >= setsParaGanar;
+    }
+
+    function liberoEnPosicionProhibida(equipo, afterRotation = false) {
+        const alin = equipo === 'A' ? partido.alineacionA : partido.alineacionB;
+        for (let pos = 1; pos <= 6; pos++) {
+            const id = alin[pos-1];
+            if (id && isLibero(equipo, id)) {
+                if (pos === 2 || pos === 3 || pos === 4) {
+                    return { forbidden: true, reason: `El líbero está en posición delantera (${pos}) y no puede atacar.` };
+                }
+                if (pos === 1 && partido.saque === equipo && !afterRotation) {
+                    return { forbidden: true, reason: `El líbero está en posición de saque (1) y no puede servir.` };
+                }
+            }
+        }
+        return { forbidden: false };
+    }
+
+    async function sumarPunto(equipo) {
+        if (partidoFinalizado()) { await alert('El partido ya ha finalizado.'); return; }
+
+        const equipoQueSaca = partido.saque;
+        const equipoQueRecibe = equipoQueSaca === 'A' ? 'B' : 'A';
+
+        const errorSaque = liberoEnPosicionProhibida(equipoQueSaca);
+        if (errorSaque.forbidden) {
+            await alert(`Equipo ${equipoQueSaca}: ${errorSaque.reason}. Realice un cambio de líbero o sustitución.`);
+            return;
+        }
+        const errorRecibe = liberoEnPosicionProhibida(equipoQueRecibe);
+        if (errorRecibe.forbidden) {
+            await alert(`Equipo ${equipoQueRecibe}: ${errorRecibe.reason}. Realice un cambio de líbero o sustitución.`);
+            return;
+        }
+
+        guardarHistorial('punto');
+
+        const teniaSaque = (partido.saque === equipo);
+        partido.puntos[equipo]++;
+
+        if (!teniaSaque) {
+            partido.saque = equipo;
+            rotarAlineacion(equipo);
+        }
+
+        const puntosMinimos = puntosMinimosSetActual();
+        const diferencia = Math.abs(partido.puntos.A - partido.puntos.B);
+        if ((partido.puntos.A >= puntosMinimos || partido.puntos.B >= puntosMinimos) && diferencia >= 2) {
+            const ganadorSet = partido.puntos.A > partido.puntos.B ? 'A' : 'B';
+            partido.setsGanados[ganadorSet]++;
+
+            if (!partidoFinalizado() && partido.setActual < totalSets) {
+                partido.setActual++;
+                partido.puntos = { A: 0, B: 0 };
+                partido.sustituciones = { A: 0, B: 0 };
+                partido.tiempos = { A: 0, B: 0 };
+                partido.saque = 'A';
+                partido.historial = [];
+                initSetSubstitutions();
+            }
+        }
+        guardarPartido();
+        renderAlineacion();
+        actualizarEstadoPartido();
+    }
+
+    async function pedirTiempo(equipo) {
+        if (partidoFinalizado()) { await alert('El partido ya ha finalizado.'); return; }
+        if (tiempoActivo[equipo]) { await alert(`Ya hay un tiempo muerto en curso para el equipo ${equipo}.`); return; }
+        if (partido.tiempos[equipo] >= partido.maxTiempos) {
+            await alert(`El equipo ${equipo} ya ha usado sus ${partido.maxTiempos} tiempos en este set.`);
+            return;
+        }
+        partido.tiempos[equipo]++;
+        guardarPartido();
+        renderAlineacion();
+
+        const boton = document.getElementById(`tiempo${equipo}`);
+        let segundos = 30;
+        boton.disabled = true;
+        tiempoActivo[equipo] = true;
+        boton.innerText = `⏸️ Tiempo ${equipo} (${segundos}s)`;
+
+        intervalos[equipo] = setInterval(() => {
+            segundos--;
+            if (segundos <= 0) {
+                clearInterval(intervalos[equipo]);
+                intervalos[equipo] = null;
+                tiempoActivo[equipo] = false;
+                if (partido.tiempos[equipo] >= partido.maxTiempos) {
+                    boton.innerText = `⏸️ Tiempo ${equipo} (agotado)`;
+                    boton.disabled = true;
+                } else {
+                    boton.innerText = `⏸️ Tiempo ${equipo}`;
+                    boton.disabled = false;
+                }
+            } else {
+                boton.innerText = `⏸️ Tiempo ${equipo} (${segundos}s)`;
+            }
+        }, 1000);
+    }
+
+    async function nuevoSetForzado() {
+        if (partidoFinalizado()) { await alert('El partido ya ha finalizado.'); return; }
+        const puntosMinimos = puntosMinimosSetActual();
+        const diferencia = Math.abs(partido.puntos.A - partido.puntos.B);
+        if ((partido.puntos.A >= puntosMinimos || partido.puntos.B >= puntosMinimos) && diferencia >= 2) {
+            const ganadorSet = partido.puntos.A > partido.puntos.B ? 'A' : 'B';
+            partido.setsGanados[ganadorSet]++;
+            if (!partidoFinalizado() && partido.setActual < totalSets) {
+                partido.setActual++;
+                partido.puntos = { A: 0, B: 0 };
+                partido.sustituciones = { A: 0, B: 0 };
+                partido.tiempos = { A: 0, B: 0 };
+                partido.saque = 'A';
+                partido.historial = [];
+                initSetSubstitutions();
+            }
+        } else {
+            await alert('El set actual no ha terminado según las reglas. No se puede avanzar.');
+            return;
+        }
+        guardarPartido();
+        renderAlineacion();
+        actualizarEstadoPartido();
+    }
+
+    async function reiniciar() {
+        const ok = await confirm('¿Reiniciar el partido? Se perderán todos los datos actuales.');
+        if (ok) {
+            partido.setActual = 1;
+            partido.puntos = { A: 0, B: 0 };
+            partido.setsGanados = { A: 0, B: 0 };
+            partido.sustituciones = { A: 0, B: 0 };
+            partido.tiempos = { A: 0, B: 0 };
+            partido.saque = 'A';
+            partido.historial = [];
+            resetTarjetas(partido.jugadoresA);
+            resetTarjetas(partido.jugadoresB);
+            partido.alineacionA = inicializarAlineacion('A');
+            partido.alineacionB = inicializarAlineacion('B');
+            initSetSubstitutions();
+
+            if (intervalos.A) clearInterval(intervalos.A);
+            if (intervalos.B) clearInterval(intervalos.B);
+            tiempoActivo.A = false;
+            tiempoActivo.B = false;
+            document.getElementById('tiempoA').innerText = '⏸️ Tiempo A';
+            document.getElementById('tiempoB').innerText = '⏸️ Tiempo B';
+            document.getElementById('tiempoA').disabled = false;
+            document.getElementById('tiempoB').disabled = false;
+
+            guardarPartido();
+            renderAlineacion();
+            actualizarEstadoPartido();
+        }
+    }
+
+    // ======================= FUNCIONES DE CAMBIO DE LÍBERO =======================
+    async function realizarCambioLibero(equipo, idOut, idIn) {
+        const outJug = getJugadorById(equipo, idOut);
+        const inJug = getJugadorById(equipo, idIn);
+        if (!outJug || !inJug || !outJug.libero || !inJug.libero) {
+            await alert('Solo se permite cambiar un líbero por el otro líbero.');
+            return false;
+        }
+        const alin = equipo === 'A' ? partido.alineacionA : partido.alineacionB;
+        if (alin.includes(idIn)) {
+            await alert('El otro líbero ya está en la cancha.');
+            return false;
+        }
+        const idx = alin.findIndex(id => id === idOut);
+        if (idx === -1) return false;
+
+        guardarHistorial('libero_exchange');
+        alin[idx] = idIn;
+        guardarPartido();
+        renderAlineacion();
+        actualizarEstadoPartido();
+        return true;
+    }
+
+    async function realizarReemplazoLibero(equipo, idRegular, idLibero, reverse = false) {
+        const regularJug = getJugadorById(equipo, idRegular);
+        const liberoJug = getJugadorById(equipo, idLibero);
+        if (!regularJug || !liberoJug) return false;
+        if (!liberoJug.libero) {
+            await alert('El segundo jugador no es líbero.');
+            return false;
+        }
+        if (regularJug.libero) {
+            await alert('El jugador de campo no puede ser líbero.');
+            return false;
+        }
+        const alin = equipo === 'A' ? partido.alineacionA : partido.alineacionB;
+        const idxRegular = alin.findIndex(id => id === idRegular);
+        const idxLibero = alin.findIndex(id => id === idLibero);
+        const replacements = partido.liberoReplacements[equipo];
+
+        if (!reverse) {
+            if (idxRegular === -1) {
+                await alert('El jugador de campo no está en cancha.');
+                return false;
+            }
+            if (idxLibero !== -1) {
+                await alert('El líbero ya está en cancha.');
+                return false;
+            }
+            const pos = idxRegular + 1;
+            if (![1,5,6].includes(pos)) {
+                await alert('El líbero solo puede reemplazar a un jugador en posición zaguera (1,5,6).');
+                return false;
+            }
+            if (replacements[idLibero]) {
+                await alert('El líbero ya está reemplazando a otro jugador. Primero debe regresar a ese jugador.');
+                return false;
+            }
+            guardarHistorial('libero_replace');
+            alin[idxRegular] = idLibero;
+            replacements[idLibero] = idRegular;
+        } else {
+            if (idxLibero === -1) {
+                await alert('El líbero no está en cancha.');
+                return false;
+            }
+            if (idxRegular !== -1) {
+                await alert('El jugador de campo ya está en cancha.');
+                return false;
+            }
+            if (replacements[idLibero] !== idRegular) {
+                await alert('Este líbero no reemplazó a este jugador.');
+                return false;
+            }
+            guardarHistorial('libero_reverse');
+            const idx = idxLibero;
+            alin[idx] = idRegular;
+            delete replacements[idLibero];
+        }
+        guardarPartido();
+        renderAlineacion();
+        actualizarEstadoPartido();
+        return true;
+    }
+
+    // ======================= SUSTITUCIONES REGULARES (SOLO NO LÍBEROS) =======================
+    function puedeRealizarSustitucion(equipo, idOut, idIn) {
+        const status = partido.playerStatus[equipo];
+        const outStatus = status[idOut];
+        const inStatus = status[idIn];
+        if (!outStatus || !inStatus) return { allowed: false, reason: 'Jugador no encontrado' };
+
+        if (isLibero(equipo, idOut) || isLibero(equipo, idIn)) {
+            return { allowed: false, reason: 'Los cambios que involucran líberos deben hacerse con las opciones específicas (🛡️).' };
+        }
+
+        if (partido.sustituciones[equipo] >= partido.maxSustituciones) {
+            return { allowed: false, reason: `Se han agotado las ${partido.maxSustituciones} sustituciones en este set.` };
+        }
+
+        if (outStatus.isStarter && !inStatus.isStarter) {
+            if (outStatus.substitutionUsed) {
+                return { allowed: false, reason: 'Este titular ya ha sido parte de una sustitución en este set (no puede volver a salir).' };
+            }
+            if (inStatus.substitutionUsed) {
+                return { allowed: false, reason: 'Este suplente ya ha sido parte de una sustitución en este set (no puede volver a entrar).' };
+            }
+            if (inStatus.substituteIn) {
+                return { allowed: false, reason: 'Este suplente ya está en cancha.' };
+            }
+            if (outStatus.substitutedOut) {
+                return { allowed: false, reason: 'Este titular ya no está en cancha.' };
+            }
+            return { allowed: true, type: 'direct' };
+        }
+        else if (!outStatus.isStarter && inStatus.isStarter) {
+            if (!outStatus.substituteIn) {
+                return { allowed: false, reason: 'Este suplente no está en cancha (no ingresó previamente).' };
+            }
+            const log = partido.substLog[equipo];
+            const lastEntry = log.filter(entry => entry.inId === idOut).pop();
+            if (!lastEntry || lastEntry.outId !== idIn) {
+                return { allowed: false, reason: 'Solo puede regresar el titular original que fue reemplazado por este suplente.' };
+            }
+            return { allowed: true, type: 'reverse' };
+        }
+        else {
+            return { allowed: false, reason: 'Solo se permite sustituir un titular por un suplente, o la sustitución inversa (suplente por titular original).' };
+        }
+    }
+
+    async function realizarSustitucion(equipo, idOut, idIn) {
+        if (partidoFinalizado()) { await alert('El partido ya ha finalizado.'); return false; }
+        const check = puedeRealizarSustitucion(equipo, idOut, idIn);
+        if (!check.allowed) {
+            await alert(check.reason);
+            return false;
+        }
+
+        guardarHistorial('substitution');
+
+        const alineacion = equipo === 'A' ? partido.alineacionA : partido.alineacionB;
+        const idx = alineacion.findIndex(id => id === idOut);
+        if (idx === -1) return false;
+
+        alineacion[idx] = idIn;
+
+        const status = partido.playerStatus[equipo];
+        if (check.type === 'direct') {
+            status[idOut].substitutedOut = true;
+            status[idOut].substituteIn = false;
+            status[idOut].substitutionUsed = true;
+            status[idIn].substituteIn = true;
+            status[idIn].substitutedOut = false;
+            status[idIn].substitutionUsed = true;
+            status[idIn].pairedWith = idOut;
+            partido.substLog[equipo].push({ outId: idOut, inId: idIn, type: 'direct' });
+        } else {
+            status[idOut].substituteIn = false;
+            status[idOut].substitutedOut = true;
+            status[idIn].substitutedOut = false;
+            status[idIn].substituteIn = true;
+            partido.substLog[equipo].push({ outId: idOut, inId: idIn, type: 'reverse' });
+        }
+
+        partido.sustituciones[equipo]++;
+        guardarPartido();
+        renderAlineacion();
+        actualizarEstadoPartido();
+        return true;
+    }
+
+    let activeSubsMenu = null;
+    function closeSubsMenu() {
+        if (activeSubsMenu) {
+            activeSubsMenu.remove();
+            activeSubsMenu = null;
+        }
+    }
+
+    async function showSubstitutionOptions(equipo, jugadorId, pos, event) {
+        if (partidoFinalizado()) {
+            await alert('El partido ya ha finalizado.');
+            return;
+        }
+        closeSubsMenu();
+        const jugador = getJugadorById(equipo, jugadorId);
+        if (!jugador) return;
+
+        const listaJugadores = equipo === 'A' ? partido.jugadoresA : partido.jugadoresB;
+        const alin = equipo === 'A' ? partido.alineacionA : partido.alineacionB;
+        const replacements = partido.liberoReplacements[equipo];
+        const elegibles = [];
+
+        if (jugador.libero) {
+            const otroLibero = getOtroLibero(equipo, jugador.id);
+            if (otroLibero && !alin.includes(otroLibero.id)) {
+                elegibles.push({ jugador: otroLibero, type: 'libero_exchange' });
+            }
+            if (replacements[jugador.id]) {
+                const regularId = replacements[jugador.id];
+                const regular = getJugadorById(equipo, regularId);
+                if (regular && !alin.includes(regular.id)) {
+                    elegibles.push({ jugador: regular, type: 'libero_reverse' });
+                }
+            }
+        } else {
+            const liberosEnBanca = listaJugadores.filter(j => j.libero && !alin.includes(j.id));
+            for (let lib of liberosEnBanca) {
+                const idx = alin.findIndex(id => id === jugador.id);
+                const posicion = idx + 1;
+                if ([1,5,6].includes(posicion)) {
+                    elegibles.push({ jugador: lib, type: 'libero_replace' });
+                }
+            }
+            const liberoQueLoReemplaza = Object.entries(replacements).find(([libId, regId]) => regId === jugador.id)?.[0];
+            if (liberoQueLoReemplaza && !alin.includes(liberoQueLoReemplaza)) {
+                const libero = getJugadorById(equipo, liberoQueLoReemplaza);
+                if (libero) {
+                    elegibles.push({ jugador: libero, type: 'libero_replace_reverse' });
+                }
+            }
+        }
+
+        for (let sub of listaJugadores) {
+            if (sub.id === jugador.id) continue;
+            if (sub.libero || jugador.libero) continue;
+            const check = puedeRealizarSustitucion(equipo, jugador.id, sub.id);
+            if (check.allowed) {
+                elegibles.push({ jugador: sub, type: 'regular' });
+            }
+        }
+
+        if (elegibles.length === 0) {
+            await alert('No hay sustituciones disponibles para este jugador.');
+            return;
+        }
+
+        const menu = document.createElement('div');
+        menu.className = 'subs-menu';
+        const rect = event.target.getBoundingClientRect();
+        menu.style.position = 'absolute';
+        menu.style.left = rect.left + 'px';
+        menu.style.top = (rect.bottom + window.scrollY) + 'px';
+        menu.style.zIndex = '2000';
+
+        elegibles.forEach(e => {
+            const item = document.createElement('div');
+            item.className = 'subs-menu-item';
+            let prefix = '';
+            let specialClass = '';
+            if (e.type === 'libero_exchange') {
+                prefix = '🛡️ ';
+                specialClass = 'libero-exchange';
+            } else if (e.type === 'libero_replace') {
+                prefix = '🛡️ ';
+                specialClass = 'libero-replace';
+            } else if (e.type === 'libero_replace_reverse') {
+                prefix = '🛡️ ';
+                specialClass = 'libero-replace';
+            } else if (e.type === 'libero_reverse') {
+                prefix = '🛡️ ';
+                specialClass = 'libero-exchange';
+            }
+            if (specialClass) item.classList.add(specialClass);
+            const nombre = e.jugador.nombre;
+            const numero = e.jugador.numero ? ` #${e.jugador.numero}` : '';
+            item.textContent = `${prefix}${nombre}${numero}`;
+            item.addEventListener('click', async () => {
+                if (e.type === 'libero_exchange') {
+                    await realizarCambioLibero(equipo, jugador.id, e.jugador.id);
+                } else if (e.type === 'libero_replace') {
+                    await realizarReemplazoLibero(equipo, jugador.id, e.jugador.id, false);
+                } else if (e.type === 'libero_replace_reverse') {
+                    await realizarReemplazoLibero(equipo, e.jugador.id, jugador.id, false);
+                } else if (e.type === 'libero_reverse') {
+                    await realizarReemplazoLibero(equipo, e.jugador.id, jugador.id, true);
+                } else {
+                    await realizarSustitucion(equipo, jugador.id, e.jugador.id);
+                }
+                closeSubsMenu();
+            });
+            menu.appendChild(item);
+        });
+
+        document.body.appendChild(menu);
+        activeSubsMenu = menu;
+
+        const closeHandler = (e) => {
+            if (!menu.contains(e.target)) {
+                closeSubsMenu();
+                document.removeEventListener('click', closeHandler);
+            }
+        };
+        setTimeout(() => {
+            document.addEventListener('click', closeHandler);
+        }, 0);
+    }
+
+    // ======================= RENDER =======================
+    function renderAlineacion() {
+        function renderPosicion(equipo, pos) {
+            const alin = equipo === 'A' ? partido.alineacionA : partido.alineacionB;
+            const jugadorId = alin[pos-1];
+            const jugador = jugadorId ? getJugadorById(equipo, jugadorId) : null;
+            if (!jugador) return `<div class="posicion-card"><div class="pos-num">${pos}</div><div>Vacío</div></div>`;
+            const numero = jugador.numero ? ` #${jugador.numero}` : '';
+            let cardIcon = '';
+            if (jugador.tarjetas) {
+                if (jugador.tarjetas.descalificado) cardIcon = ' 🟥';
+                else if (jugador.tarjetas.expulsado) cardIcon = ' 🟡+🔴';
+                else if (jugador.tarjetas.roja) cardIcon = ' 🔴';
+                else if (jugador.tarjetas.amarillas > 0) cardIcon = ' 🟡'.repeat(jugador.tarjetas.amarillas);
+            }
+            const liberoClass = jugador.libero ? 'libero' : '';
+            return `<div class="posicion-card ${liberoClass}" data-equipo="${equipo}" data-pos="${pos}" data-jugador-id="${jugador.id}">
+                        <div class="pos-num">${pos}</div>
+                        <div class="player-name-click" data-equipo="${equipo}" data-id="${jugador.id}" data-pos="${pos}">${jugador.nombre}${numero} ${jugador.libero ? '🛡️' : ''} <span class="card-icon" data-equipo="${equipo}" data-pos="${pos}" data-jugador-id="${jugador.id}">${cardIcon || '🟨'}</span></div>
+                    </div>`;
+        }
+
+        document.getElementById('delanteraA').innerHTML = renderPosicion('A',2) + renderPosicion('A',3) + renderPosicion('A',4);
+        document.getElementById('delanteraB').innerHTML = renderPosicion('B',2) + renderPosicion('B',3) + renderPosicion('B',4);
+        document.getElementById('zagueraA').innerHTML = renderPosicion('A',1) + renderPosicion('A',6) + renderPosicion('A',5);
+        document.getElementById('zagueraB').innerHTML = renderPosicion('B',1) + renderPosicion('B',6) + renderPosicion('B',5);
+
+        document.getElementById('nombreA').innerText = partido.nombreA;
+        document.getElementById('nombreB').innerText = partido.nombreB;
+        document.getElementById('marcadorA').innerHTML = partido.puntos.A + '<span class="saque-indicator" id="saqueA"></span>';
+        document.getElementById('marcadorB').innerHTML = partido.puntos.B + '<span class="saque-indicator" id="saqueB"></span>';
+        document.getElementById('set-info').innerText = `Set ${partido.setActual}/${totalSets}`;
+        document.getElementById('sustA').innerText = `A: ${partido.sustituciones.A}/${partido.maxSustituciones}`;
+        document.getElementById('sustB').innerText = `B: ${partido.sustituciones.B}/${partido.maxSustituciones}`;
+        document.getElementById('tiemposA').innerText = `⏸️ Tiempos A: ${partido.tiempos.A}/${partido.maxTiempos}`;
+        document.getElementById('tiemposB').innerText = `⏸️ Tiempos B: ${partido.tiempos.B}/${partido.maxTiempos}`;
+        document.getElementById('saqueA').innerText = partido.saque === 'A' ? ' 🏐' : '';
+        document.getElementById('saqueB').innerText = partido.saque === 'B' ? ' 🏐' : '';
+        document.getElementById('setsA').innerText = `🏆 A: ${partido.setsGanados.A}`;
+        document.getElementById('setsB').innerText = `🏆 B: ${partido.setsGanados.B}`;
+
+        const marcadorA = document.getElementById('marcadorA');
+        const marcadorB = document.getElementById('marcadorB');
+        if (setPointActivo('A')) marcadorA.classList.add('marcador-vidrio');
+        else marcadorA.classList.remove('marcador-vidrio');
+        if (setPointActivo('B')) marcadorB.classList.add('marcador-vidrio');
+        else marcadorB.classList.remove('marcador-vidrio');
+
+        let vidrioHTML = '';
+        if (setPointActivo('A')) vidrioHTML += '⚡ ¡VIDRIO A! ⚡ ';
+        if (setPointActivo('B')) vidrioHTML += '⚡ ¡VIDRIO B! ⚡';
+        let vidrioDiv = document.getElementById('vidrio-indicador');
+        if (!vidrioDiv) {
+            vidrioDiv = document.createElement('div');
+            vidrioDiv.id = 'vidrio-indicador';
+            vidrioDiv.className = 'text-center vidrio-texto';
+            document.querySelector('.puntos-equipo').insertAdjacentElement('afterend', vidrioDiv);
+        }
+        vidrioDiv.innerText = vidrioHTML;
+        if (!vidrioHTML) vidrioDiv.innerText = '';
+
+        document.querySelectorAll('.card-icon').forEach(icon => {
+            icon.addEventListener('click', function(e) {
+                e.stopPropagation();
+                closeSubsMenu();
+                const rect = this.getBoundingClientRect();
+                const menu = document.getElementById('cardMenu');
+                menu.style.left = rect.left + 'px';
+                menu.style.top = rect.bottom + 'px';
+                menu.style.display = 'block';
+                currentCardTarget = this;
+            });
+        });
+
+        document.querySelectorAll('.player-name-click').forEach(nameDiv => {
+            nameDiv.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.getElementById('cardMenu').style.display = 'none';
+                const equipo = nameDiv.getAttribute('data-equipo');
+                const jugadorId = nameDiv.getAttribute('data-id');
+                const pos = nameDiv.getAttribute('data-pos');
+                showSubstitutionOptions(equipo, jugadorId, pos, e);
+            });
+        });
+    }
+
+    window.seleccionarTarjeta = async function(tipo) {
+        if (partidoFinalizado()) { await alert('El partido ya ha finalizado.'); return; }
+        if (!currentCardTarget) return;
+        const equipo = currentCardTarget.dataset.equipo;
+        const jugadorId = currentCardTarget.dataset.jugadorId;
+        const jugador = getJugadorById(equipo, jugadorId);
+        if (!jugador) return;
+
+        if (!jugador.tarjetas) {
+            jugador.tarjetas = { amarillas: 0, roja: false, expulsado: false, descalificado: false };
+        }
+
+        switch(tipo) {
+            case 'yellow':
+                jugador.tarjetas.amarillas = (jugador.tarjetas.amarillas || 0) + 1;
+                break;
+            case 'red':
+                jugador.tarjetas.roja = true;
+                const rival = equipo === 'A' ? 'B' : 'A';
+                const teniaSaque = (partido.saque === rival);
+                partido.puntos[rival]++;
+                if (!teniaSaque) {
+                    partido.saque = rival;
+                    rotarAlineacion(rival);
+                }
+                break;
+            case 'expulsion':
+                jugador.tarjetas.expulsado = true;
+                const alin = equipo === 'A' ? partido.alineacionA : partido.alineacionB;
+                const idx = alin.findIndex(id => id === jugador.id);
+                if (idx !== -1) alin[idx] = null;
+                break;
+            case 'disqualification':
+                jugador.tarjetas.descalificado = true;
+                const alin2 = equipo === 'A' ? partido.alineacionA : partido.alineacionB;
+                const idx2 = alin2.findIndex(id => id === jugador.id);
+                if (idx2 !== -1) alin2[idx2] = null;
+                break;
+        }
+        guardarPartido();
+        renderAlineacion();
+        document.getElementById('cardMenu').style.display = 'none';
+    };
+
+    document.addEventListener('click', function(e) {
+        const menu = document.getElementById('cardMenu');
+        if (menu.style.display === 'block' && !menu.contains(e.target) && !e.target.classList.contains('card-icon')) {
+            menu.style.display = 'none';
+        }
+        if (activeSubsMenu && !activeSubsMenu.contains(e.target)) {
+            closeSubsMenu();
+        }
+    });
+
+    function actualizarEstadoPartido() {
+        const finalizado = partidoFinalizado();
+        const celebracion = document.getElementById('celebracion-final');
+        if (finalizado) {
+            const ganador = partido.setsGanados.A >= Math.ceil(totalSets/2) ? 'A' : 'B';
+            const nombreGanador = ganador === 'A' ? partido.nombreA : partido.nombreB;
+            document.getElementById('equipo-ganador-nombre').innerText = nombreGanador;
+            celebracion.style.display = 'block';
+            document.getElementById('marcadorA').style.pointerEvents = 'none';
+            document.getElementById('marcadorB').style.pointerEvents = 'none';
+            document.getElementById('tiempoA').disabled = true;
+            document.getElementById('tiempoB').disabled = true;
+            document.getElementById('deshacer-punto').disabled = true;
+            document.getElementById('nuevo-set').disabled = true;
+            document.getElementById('lanzar-moneda').disabled = true;
+            document.querySelectorAll('.card-icon').forEach(icon => { icon.style.pointerEvents = 'none'; icon.style.opacity = '0.5'; });
+        } else {
+            celebracion.style.display = 'none';
+            document.getElementById('marcadorA').style.pointerEvents = 'auto';
+            document.getElementById('marcadorB').style.pointerEvents = 'auto';
+            document.getElementById('tiempoA').disabled = false;
+            document.getElementById('tiempoB').disabled = false;
+            document.getElementById('deshacer-punto').disabled = false;
+            document.getElementById('nuevo-set').disabled = false;
+            document.getElementById('lanzar-moneda').disabled = false;
+            document.querySelectorAll('.card-icon').forEach(icon => { icon.style.pointerEvents = 'auto'; icon.style.opacity = '1'; });
+        }
+    }
+
+    function inicializarAlineacion(equipo) {
+        const jugadores = equipo === 'A' ? partido.jugadoresA : partido.jugadoresB;
+        const alineacion = new Array(6).fill(null);
+        for (let jug of jugadores) {
+            if (jug.posicion && jug.posicion >= 1 && jug.posicion <= 6) {
+                alineacion[jug.posicion - 1] = jug.id;
+            }
+        }
+        return alineacion;
+    }
+
+    function bindConfigEvents() {
+        document.querySelectorAll('#tbodyA .jug-nombreA').forEach(input => {
+            const id = input.dataset.id;
+            input.removeEventListener('input', handleNombreA);
+            input.addEventListener('input', handleNombreA);
+        });
+        document.querySelectorAll('#tbodyA .jug-numeroA').forEach(input => {
+            const id = input.dataset.id;
+            input.removeEventListener('change', handleNumeroA);
+            input.addEventListener('change', handleNumeroA);
+        });
+        document.querySelectorAll('#tbodyA .jug-posicionA').forEach(select => {
+            const id = select.dataset.id;
+            select.removeEventListener('change', handlePosicionA);
+            select.addEventListener('change', handlePosicionA);
+        });
+        document.querySelectorAll('#tbodyA .jug-liberoA').forEach(chk => {
+            const id = chk.dataset.id;
+            chk.removeEventListener('change', handleLiberoA);
+            chk.addEventListener('change', handleLiberoA);
+        });
+        document.querySelectorAll('#tbodyB .jug-nombreB').forEach(input => {
+            input.removeEventListener('input', handleNombreB);
+            input.addEventListener('input', handleNombreB);
+        });
+        document.querySelectorAll('#tbodyB .jug-numeroB').forEach(input => {
+            input.removeEventListener('change', handleNumeroB);
+            input.addEventListener('change', handleNumeroB);
+        });
+        document.querySelectorAll('#tbodyB .jug-posicionB').forEach(select => {
+            select.removeEventListener('change', handlePosicionB);
+            select.addEventListener('change', handlePosicionB);
+        });
+        document.querySelectorAll('#tbodyB .jug-liberoB').forEach(chk => {
+            const id = chk.dataset.id;
+            chk.removeEventListener('change', handleLiberoB);
+            chk.addEventListener('change', handleLiberoB);
+        });
+    }
+
+    function handleNombreA(e) {
+        const id = e.target.dataset.id;
+        const jug = partido.jugadoresA.find(j => j.id === id);
+        if (jug) jug.nombre = e.target.value;
+        updateLiberoCounter('A');
+    }
+    function handleNumeroA(e) {
+        const id = e.target.dataset.id;
+        const jug = partido.jugadoresA.find(j => j.id === id);
+        if (jug) jug.numero = e.target.value ? parseInt(e.target.value) : null;
+    }
+    function handlePosicionA(e) {
+        const id = e.target.dataset.id;
+        const jug = partido.jugadoresA.find(j => j.id === id);
+        if (jug) jug.posicion = e.target.value ? parseInt(e.target.value) : null;
+    }
+    function handleLiberoA(e) {
+        const id = e.target.dataset.id;
+        const currentCount = partido.jugadoresA.filter(j => j.libero).length;
+        if (e.target.checked && currentCount >= 2) {
+            e.target.checked = false;
+            alert('Solo se pueden tener 2 líberos por equipo.');
+            return;
+        }
+        const jug = partido.jugadoresA.find(j => j.id === id);
+        if (jug) jug.libero = e.target.checked;
+        renderConfig();
+        updateLiberoCounter('A');
+    }
+    function handleNombreB(e) {
+        const id = e.target.dataset.id;
+        const jug = partido.jugadoresB.find(j => j.id === id);
+        if (jug) jug.nombre = e.target.value;
+        updateLiberoCounter('B');
+    }
+    function handleNumeroB(e) {
+        const id = e.target.dataset.id;
+        const jug = partido.jugadoresB.find(j => j.id === id);
+        if (jug) jug.numero = e.target.value ? parseInt(e.target.value) : null;
+    }
+    function handlePosicionB(e) {
+        const id = e.target.dataset.id;
+        const jug = partido.jugadoresB.find(j => j.id === id);
+        if (jug) jug.posicion = e.target.value ? parseInt(e.target.value) : null;
+    }
+    function handleLiberoB(e) {
+        const id = e.target.dataset.id;
+        const currentCount = partido.jugadoresB.filter(j => j.libero).length;
+        if (e.target.checked && currentCount >= 2) {
+            e.target.checked = false;
+            alert('Solo se pueden tener 2 líberos por equipo.');
+            return;
+        }
+        const jug = partido.jugadoresB.find(j => j.id === id);
+        if (jug) jug.libero = e.target.checked;
+        renderConfig();
+        updateLiberoCounter('B');
+    }
+
+    function updateLiberoCounter(equipo) {
+        const count = equipo === 'A' ? partido.jugadoresA.filter(j => j.libero).length : partido.jugadoresB.filter(j => j.libero).length;
+        const counterSpan = document.getElementById(`libero-counter-${equipo}`);
+        if (counterSpan) counterSpan.innerText = `Líberos seleccionados: ${count}/2`;
+    }
+
+    function renderConfig() {
+        const tbodyA = document.getElementById('tbodyA');
+        tbodyA.innerHTML = '';
+        partido.jugadoresA.forEach((jug, index) => {
+            const tr = document.createElement('tr');
+            const posSelect = `<select class="jug-posicionA" data-id="${jug.id}" ${index >= 6 ? 'disabled' : ''}>
+                <option value="">--</option>
+                ${[1,2,3,4,5,6].map(p => `<option value="${p}" ${jug.posicion == p ? 'selected' : ''}>${p}</option>`).join('')}
+            </select>`;
+            const liberoChecked = jug.libero ? 'checked' : '';
+            tr.innerHTML = `
+                <td><input type="text" class="jug-nombreA" data-id="${jug.id}" value="${jug.nombre.replace(/"/g, '&quot;')}"></td>
+                <td><input type="number" class="jug-numeroA" data-id="${jug.id}" value="${jug.numero || ''}" min="1" max="99"></td>
+                <td>${posSelect}</td>
+                <td style="text-align:center"><input type="checkbox" class="jug-liberoA" data-id="${jug.id}" ${liberoChecked}></td>
+                <td><button class="btn btn-sm btn-danger" data-id="${jug.id}" data-equipo="A">🗑️</button></td>
+            `;
+            tbodyA.appendChild(tr);
+        });
+        const tbodyB = document.getElementById('tbodyB');
+        tbodyB.innerHTML = '';
+        partido.jugadoresB.forEach((jug, index) => {
+            const tr = document.createElement('tr');
+            const posSelect = `<select class="jug-posicionB" data-id="${jug.id}" ${index >= 6 ? 'disabled' : ''}>
+                <option value="">--</option>
+                ${[1,2,3,4,5,6].map(p => `<option value="${p}" ${jug.posicion == p ? 'selected' : ''}>${p}</option>`).join('')}
+            </select>`;
+            const liberoChecked = jug.libero ? 'checked' : '';
+            tr.innerHTML = `
+                <td><input type="text" class="jug-nombreB" data-id="${jug.id}" value="${jug.nombre.replace(/"/g, '&quot;')}"></td>
+                <td><input type="number" class="jug-numeroB" data-id="${jug.id}" value="${jug.numero || ''}" min="1" max="99"></td>
+                <td>${posSelect}</td>
+                <td style="text-align:center"><input type="checkbox" class="jug-liberoB" data-id="${jug.id}" ${liberoChecked}></td>
+                <td><button class="btn btn-sm btn-danger" data-id="${jug.id}" data-equipo="B">🗑️</button></td>
+            `;
+            tbodyB.appendChild(tr);
+        });
+
+        document.querySelectorAll('#tbodyA .btn-danger').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = btn.dataset.id;
+                partido.jugadoresA = partido.jugadoresA.filter(j => j.id !== id);
+                renderConfig();
+                updateLiberoCounter('A');
+                guardarPartido();
+            });
+        });
+        document.querySelectorAll('#tbodyB .btn-danger').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = btn.dataset.id;
+                partido.jugadoresB = partido.jugadoresB.filter(j => j.id !== id);
+                renderConfig();
+                updateLiberoCounter('B');
+                guardarPartido();
+            });
+        });
+
+        bindConfigEvents();
+        updateLiberoCounter('A');
+        updateLiberoCounter('B');
+    }
+
+    function guardarPartido() {
+        localStorage.setItem('partido_voleibol', JSON.stringify(partido));
+        localStorage.setItem('totalSets', totalSets);
+        localStorage.setItem('puntosPorSet', puntosPorSet);
+        actualizarVistaPreviaJSON();
+    }
+
+    function cargarPartidoGuardado() {
+        const guardado = localStorage.getItem('partido_voleibol');
+        if (guardado) {
+            const data = JSON.parse(guardado);
+            partido = { ...partido, ...data };
+            asegurarTarjetas(partido.jugadoresA);
+            asegurarTarjetas(partido.jugadoresB);
+        }
+        const setsGuardados = localStorage.getItem('totalSets');
+        if (setsGuardados) totalSets = parseInt(setsGuardados);
+        const puntosGuardados = localStorage.getItem('puntosPorSet');
+        if (puntosGuardados) puntosPorSet = parseInt(puntosGuardados);
+        actualizarSwitches();
+    }
+
+    function actualizarVistaPreviaJSON() {
+        const preview = document.getElementById('json-preview');
+        const copia = {
+            ...partido,
+            jugadoresA: partido.jugadoresA.map(j => ({ ...j })),
+            jugadoresB: partido.jugadoresB.map(j => ({ ...j }))
+        };
+        preview.innerText = JSON.stringify(copia, null, 2);
+    }
+
+    function exportarJSON() {
+        const dataStr = JSON.stringify(partido, null, 2);
+        const blob = new Blob([dataStr], {type: 'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `partido_voleibol_${new Date().toISOString().slice(0,19)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    async function importarJSON(file) {
+        const text = await file.text();
+        try {
+            const data = JSON.parse(text);
+            partido = { ...partido, ...data };
+            asegurarTarjetas(partido.jugadoresA);
+            asegurarTarjetas(partido.jugadoresB);
+            partido.alineacionA = inicializarAlineacion('A');
+            partido.alineacionB = inicializarAlineacion('B');
+            initSetSubstitutions();
+            guardarPartido();
+            renderAlineacion();
+            actualizarEstadoPartido();
+            await alert('Partido importado correctamente.');
+        } catch(e) {
+            await alert('Error al importar: ' + e.message);
+        }
+    }
+
+    function agregarJugador(equipo) {
+        const lista = equipo === 'A' ? partido.jugadoresA : partido.jugadoresB;
+        if (lista.length >= 15) {
+            alert('Máximo 15 jugadores por equipo.');
+            return;
+        }
+        const nuevoJugador = {
+            id: generarId(),
+            nombre: 'Nuevo jugador',
+            numero: null,
+            posicion: null,
+            libero: false,
+            tarjetas: { amarillas: 0, roja: false, expulsado: false, descalificado: false }
+        };
+        lista.push(nuevoJugador);
+        renderConfig();
+        if (equipo === 'A') updateLiberoCounter('A');
+        else updateLiberoCounter('B');
+        guardarPartido();
+    }
+
+    // ======================= LANZAR MONEDA MODIFICADO: SOLO CARA O SELLO =======================
+    async function lanzarMoneda() {
+        const monedaDiv = document.getElementById('moneda-container');
+        monedaDiv.classList.add('girando');
+        await new Promise(resolve => setTimeout(resolve, 800));
+        monedaDiv.classList.remove('girando');
+        const resultado = Math.random() < 0.5 ? 'A' : 'B';
+        const lado = resultado === 'A' ? 'Cara' : 'Sello';
+        partido.saque = resultado;
+        document.getElementById('resultado-moneda').innerText = `¡${lado}!`;
+        guardarPartido();
+        renderAlineacion();
+        await alert(`¡${lado}!`);
+    }
+
+    // Inicialización
+    function init() {
+        cargarPartidoGuardado();
+        if (partido.jugadoresA.length === 0) {
+            for (let i = 1; i <= 6; i++) {
+                partido.jugadoresA.push({
+                    id: generarId(),
+                    nombre: `Jugador A${i}`,
+                    numero: i,
+                    posicion: i,
+                    libero: false,
+                    tarjetas: { amarillas: 0, roja: false, expulsado: false, descalificado: false }
+                });
+                partido.jugadoresB.push({
+                    id: generarId(),
+                    nombre: `Jugador B${i}`,
+                    numero: i,
+                    posicion: i,
+                    libero: false,
+                    tarjetas: { amarillas: 0, roja: false, expulsado: false, descalificado: false }
+                });
+            }
+            partido.nombreA = 'Águilas';
+            partido.nombreB = 'Leones';
+        }
+        partido.alineacionA = inicializarAlineacion('A');
+        partido.alineacionB = inicializarAlineacion('B');
+        initSetSubstitutions();
+        renderConfig();
+        renderAlineacion();
+        actualizarEstadoPartido();
+        actualizarSwitches();
+        guardarPartido();
+
+        document.getElementById('marcadorA').addEventListener('click', () => sumarPunto('A'));
+        document.getElementById('marcadorB').addEventListener('click', () => sumarPunto('B'));
+        document.getElementById('tiempoA').addEventListener('click', () => pedirTiempo('A'));
+        document.getElementById('tiempoB').addEventListener('click', () => pedirTiempo('B'));
+        document.getElementById('deshacer-punto').addEventListener('click', deshacerUltimaAccion);
+        document.getElementById('nuevo-set').addEventListener('click', nuevoSetForzado);
+        document.getElementById('reiniciar-partido').addEventListener('click', reiniciar);
+        document.getElementById('lanzar-moneda').addEventListener('click', lanzarMoneda);
+        document.getElementById('exportar-json').addEventListener('click', exportarJSON);
+        document.getElementById('importar-json').addEventListener('click', () => document.getElementById('import-file').click());
+        document.getElementById('import-file').addEventListener('change', async (e) => {
+            if (e.target.files.length) await importarJSON(e.target.files[0]);
+            e.target.value = '';
+        });
+        document.getElementById('guardar-config').addEventListener('click', () => {
+            partido.nombreA = document.getElementById('config-nombreA').value;
+            partido.nombreB = document.getElementById('config-nombreB').value;
+            const setInicial = parseInt(document.getElementById('config-set').value);
+            if (!isNaN(setInicial) && setInicial >= 1 && setInicial <= totalSets) partido.setActual = setInicial;
+            guardarPartido();
+            renderAlineacion();
+            actualizarEstadoPartido();
+            document.querySelector('.tab[data-panel="juego"]').click();
+        });
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const panelId = 'panel-' + tab.dataset.panel;
+                document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+                document.getElementById(panelId).classList.add('active');
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                if (panelId === 'panel-config') renderConfig();
+                if (panelId === 'panel-export') actualizarVistaPreviaJSON();
+            });
+        });
+        document.getElementById('agregarJugadorA').addEventListener('click', () => agregarJugador('A'));
+        document.getElementById('agregarJugadorB').addEventListener('click', () => agregarJugador('B'));
+
+        document.getElementById('btn-ayuda').addEventListener('click', mostrarAyuda);
+    }
+
+    init();
+})();
+</script>
+</body>
+</html>
