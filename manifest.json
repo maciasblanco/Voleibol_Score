@@ -1,17 +1,59 @@
 {
-  "name": "Marcador Voleibol",
-  "short_name": "Voleibol",
-  "description": "Marcador oficial de voleibol con sustituciones y líberos",
+  "name": "Marcador Voleibol VNL",
+  "short_name": "VoleyScore",
+  "description": "Marcador profesional de voleibol con reglas FIVB, sustituciones, líberos y rotaciones",
   "start_url": ".",
   "display": "standalone",
   "theme_color": "#8e24ad",
   "background_color": "#ffffff",
-  "orientation": "landscape",
+  "orientation": "portrait",
   "icons": [
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%23f9b81b' rx='30'/%3E%3Ccircle cx='100' cy='80' r='45' fill='%23f9b81b' stroke='%235c2273' stroke-width='3'/%3E%3Cpath d='M65 55 Q 100 30, 135 55' stroke='%235c2273' stroke-width='4' fill='none'/%3E%3Cpath d='M65 105 Q 100 130, 135 105' stroke='%235c2273' stroke-width='4' fill='none'/%3E%3Cpath d='M78 42 Q 100 80, 122 42' stroke='%235c2273' stroke-width='4' fill='none'/%3E%3Cpath d='M78 118 Q 100 80, 122 118' stroke='%235c2273' stroke-width='4' fill='none'/%3E%3Ccircle cx='100' cy='80' r='8' fill='%235c2273'/%3E%3Ctext x='100' y='165' font-family='Arial, sans-serif' font-size='24' font-weight='bold' fill='%235c2273' text-anchor='middle'%3EMARCADOR%3C/text%3E%3C/svg%3E",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "icons/icon-72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]

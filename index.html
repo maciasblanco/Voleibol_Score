@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>🏐 Marcador Voleibol · FIVB VNL (8 sustituciones) · Líberos</title>
+    <link rel="manifest" href="manifest.json">
     <style>
         /* Variables del sistema GED */
         :root {
@@ -819,6 +820,11 @@
         <h3>Vista previa del JSON actual:</h3>
         <pre id="json-preview" style="background: #f1f5f9; padding: 10px; border-radius: 12px; overflow: auto; max-height: 200px; font-size: 0.8rem;"></pre>
     </div>
+</div>
+
+<!-- Botón de instalación PWA -->
+<div id="install-container" style="text-align: center; margin-top: 16px; display: none;">
+    <button id="install-btn" class="btn btn-success">📲 Instalar App</button>
 </div>
 
 <div id="cardMenu" style="display: none; position: absolute; background: white; border: 1px solid #ccc; border-radius: 8px; padding: 5px 0; box-shadow: 0 2px 10px rgba(0,0,0,0.2); z-index: 9999;">
@@ -2065,7 +2071,7 @@
         await alert(`¡${lado}!`);
     }
 
-    // Inicialización
+    // ======================= INICIALIZACIÓN =======================
     function init() {
         cargarPartidoGuardado();
         if (partido.jugadoresA.length === 0) {
@@ -2141,6 +2147,39 @@
     }
 
     init();
+
+    // ======================= MANEJO DE INSTALACIÓN PWA =======================
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        const installContainer = document.getElementById('install-container');
+        if (installContainer) installContainer.style.display = 'block';
+    });
+
+    document.getElementById('install-btn')?.addEventListener('click', () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
+            document.getElementById('install-container').style.display = 'none';
+        }
+    });
+
+    // ======================= REGISTRO DEL SERVICE WORKER MEJORADO =======================
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').then(reg => {
+            console.log('Service Worker registrado correctamente', reg);
+            reg.addEventListener('updatefound', () => {
+                const newWorker = reg.installing;
+                newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        alert('¡Nueva versión disponible! Actualiza la página para obtener los cambios.');
+                    }
+                });
+            });
+        }).catch(err => console.error('Error al registrar el Service Worker:', err));
+    }
+
 })();
 </script>
 </body>
