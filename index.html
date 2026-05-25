@@ -173,19 +173,29 @@
             border-radius: 20px;
             padding: 15px;
         }
-        .fila-delantera, .fila-zaguera {
+        .fila-atacantes, .fila-zagueros {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 8px;
             margin: 8px 0;
         }
-        .fila-delantera .posicion-card {
-            background: #bbdefb;
-            border: var(--border-thickness) solid var(--accent-blue);
+        /* Atacantes: fondo verde claro */
+        .fila-atacantes .posicion-card {
+            background: #c8e6c9;  /* verde claro */
+            border: var(--border-thickness) solid #2e7d32;
         }
-        .fila-zaguera .posicion-card {
-            background: #c8e6c9;
-            border: var(--border-thickness) solid var(--primary-purple);
+        /* Zagueros: fondo azul oscuro */
+        .fila-zagueros .posicion-card {
+            background: #1e3a8a;   /* azul oscuro */
+            border: var(--border-thickness) solid #60a5fa;
+            color: white;
+        }
+        .fila-zagueros .posicion-card .pos-num,
+        .fila-zagueros .posicion-card .player-name-click {
+            color: white;
+        }
+        .fila-zagueros .posicion-card .card-icon {
+            color: #facc15;
         }
         .posicion-card {
             border-radius: 14px;
@@ -202,7 +212,7 @@
         }
         .pos-num {
             font-weight: 700;
-            color: var(--dark-purple);
+            color: inherit;
             font-size: 1.1rem;
         }
         /* Estilo para líbero */
@@ -803,17 +813,17 @@
         <div class="cancha-container">
             <div class="equipo-cancha equipo-a">
                 <h4 style="text-align: center; margin-bottom: 10px;"><span id="nombreA">Equipo A</span></h4>
-                <div class="label-fila">🔺 Delanteros (2,3,4)</div>
-                <div class="fila-delantera" id="delanteraA"></div>
-                <div class="label-fila">🔻 Zagueros (1,6,5)</div>
-                <div class="fila-zaguera" id="zagueraA"></div>
+                <div class="label-fila">🔺 Atacantes (4,3,2)</div>
+                <div class="fila-atacantes" id="atacantesA"></div>
+                <div class="label-fila">🔻 Zagueros (5,6,1)</div>
+                <div class="fila-zagueros" id="zaguerosA"></div>
             </div>
             <div class="equipo-cancha equipo-b">
                 <h4 style="text-align: center; margin-bottom: 10px;"><span id="nombreB">Equipo B</span></h4>
-                <div class="label-fila">🔺 Delanteros (2,3,4)</div>
-                <div class="fila-delantera" id="delanteraB"></div>
-                <div class="label-fila">🔻 Zagueros (1,6,5)</div>
-                <div class="fila-zaguera" id="zagueraB"></div>
+                <div class="label-fila">🔺 Atacantes (4,3,2)</div>
+                <div class="fila-atacantes" id="atacantesB"></div>
+                <div class="label-fila">🔻 Zagueros (5,6,1)</div>
+                <div class="fila-zagueros" id="zaguerosB"></div>
             </div>
         </div>
 
@@ -849,10 +859,9 @@
         </div>
         <div id="jugadoresA-container">
             <table class="tabla-jugadores" id="tabla-jugadoresA">
-                <thead>
-                    <tr><th>Nombre</th><th># Camiseta</th><th>Posición (1-6)</th><th>Líbero</th><th></th> </thead>
+                <thead><tr><th>Nombre</th><th># Camiseta</th><th>Posición (1-6)</th><th>Líbero</th><th></th> </thead>
                 <tbody id="tbodyA"></tbody>
-             </table>
+              </table>
             <div id="libero-counter-A" class="libero-counter">Líberos seleccionados: 0/2</div>
         </div>
         <button class="btn btn-info btn-sm btn-agregar" id="agregarJugadorA">➕ Agregar jugador a A (hasta 15)</button>
@@ -864,10 +873,9 @@
         </div>
         <div id="jugadoresB-container">
             <table class="tabla-jugadores" id="tabla-jugadoresB">
-                <thead>
-                    <tr><th>Nombre</th><th># Camiseta</th><th>Posición (1-6)</th><th>Líbero</th><th></th> </thead>
+                <thead><tr><th>Nombre</th><th># Camiseta</th><th>Posición (1-6)</th><th>Líbero</th><th></th> </thead>
                 <tbody id="tbodyB"></tbody>
-             </table>
+              </table>
             <div id="libero-counter-B" class="libero-counter">Líberos seleccionados: 0/2</div>
         </div>
         <button class="btn btn-info btn-sm btn-agregar" id="agregarJugadorB">➕ Agregar jugador a B (hasta 15)</button>
@@ -895,7 +903,7 @@
         <pre id="json-preview" style="background: #f1f5f9; padding: 10px; border-radius: 12px; overflow: auto; max-height: 200px; font-size: 0.8rem;"></pre>
     </div>
 
-    <!-- PANEL DONACIÓN (oculto inicialmente) -->
+    <!-- PANEL DONACIÓN -->
     <div id="panel-donar" class="panel">
         <h2>💖 Apoya el desarrollo</h2>
         <p class="text-muted">Tu colaboración ayuda a mantener y mejorar esta herramienta. ¡Gracias por tu apoyo!</p>
@@ -913,7 +921,7 @@
                 <input type="hidden" name="lc" value="ES">
                 <div class="paypal-form">
                     <label>Cantidad (USD): </label>
-                    <input type="number" id="donation-amount" name="amount" step="0.01" min="1" value="5" required>
+                    <input type="number" id="donation-amount" name="amount" step="0.01" min="1" value="1" required>
                     <button type="submit" class="btn btn-success btn-sm">💸 Donar con PayPal</button>
                 </div>
             </form>
@@ -1243,7 +1251,6 @@
         alin[5] = first;
     }
 
-    // MOD: Guardar también setsGanados y setActual en el historial para poder deshacer correctamente
     function guardarHistorial(accion) {
         partido.historial.push({
             accion: accion,
@@ -1261,7 +1268,6 @@
         });
     }
 
-    // MOD: Restaurar también setsGanados y setActual al deshacer
     async function deshacerUltimaAccion() {
         if (partidoFinalizado()) { await alert('El partido ya ha finalizado.'); return; }
         if (partido.historial.length === 0) { await alert('No hay acciones para deshacer'); return; }
@@ -1758,31 +1764,43 @@
     }
 
     // ======================= RENDER =======================
-    function renderAlineacion() {
-        function renderPosicion(equipo, pos) {
-            const alin = equipo === 'A' ? partido.alineacionA : partido.alineacionB;
-            const jugadorId = alin[pos-1];
-            const jugador = jugadorId ? getJugadorById(equipo, jugadorId) : null;
-            if (!jugador) return `<div class="posicion-card"><div class="pos-num">${pos}</div><div>Vacío</div></div>`;
-            const numero = jugador.numero ? ` #${jugador.numero}` : '';
-            let cardIcon = '';
-            if (jugador.tarjetas) {
-                if (jugador.tarjetas.descalificado) cardIcon = ' 🟥';
-                else if (jugador.tarjetas.expulsado) cardIcon = ' 🟡+🔴';
-                else if (jugador.tarjetas.roja) cardIcon = ' 🔴';
-                else if (jugador.tarjetas.amarillas > 0) cardIcon = ' 🟡'.repeat(jugador.tarjetas.amarillas);
-            }
-            const liberoClass = jugador.libero ? 'libero' : '';
-            return `<div class="posicion-card ${liberoClass}" data-equipo="${equipo}" data-pos="${pos}" data-jugador-id="${jugador.id}">
-                        <div class="pos-num">${pos}</div>
-                        <div class="player-name-click" data-equipo="${equipo}" data-id="${jugador.id}" data-pos="${pos}">${jugador.nombre}${numero} ${jugador.libero ? '🛡️' : ''} <span class="card-icon" data-equipo="${equipo}" data-pos="${pos}" data-jugador-id="${jugador.id}">${cardIcon || '🟨'}</span></div>
-                    </div>`;
-        }
+    // Función para mapear posición real a número mostrado: Atacantes (pos reales 2,3,4 -> 4,3,2); Zagueros (1,6,5 -> 5,6,1)
+    function getDisplayPosition(realPos) {
+        if (realPos === 2) return 4;
+        if (realPos === 3) return 3;
+        if (realPos === 4) return 2;
+        if (realPos === 1) return 5;
+        if (realPos === 6) return 6;
+        if (realPos === 5) return 1;
+        return realPos;
+    }
 
-        document.getElementById('delanteraA').innerHTML = renderPosicion('A',2) + renderPosicion('A',3) + renderPosicion('A',4);
-        document.getElementById('delanteraB').innerHTML = renderPosicion('B',2) + renderPosicion('B',3) + renderPosicion('B',4);
-        document.getElementById('zagueraA').innerHTML = renderPosicion('A',1) + renderPosicion('A',6) + renderPosicion('A',5);
-        document.getElementById('zagueraB').innerHTML = renderPosicion('B',1) + renderPosicion('B',6) + renderPosicion('B',5);
+    function renderPosicion(equipo, pos) {
+        const alin = equipo === 'A' ? partido.alineacionA : partido.alineacionB;
+        const jugadorId = alin[pos-1];
+        const jugador = jugadorId ? getJugadorById(equipo, jugadorId) : null;
+        if (!jugador) return `<div class="posicion-card"><div class="pos-num">${getDisplayPosition(pos)}</div><div>Vacío</div></div>`;
+        const numero = jugador.numero ? ` #${jugador.numero}` : '';
+        let cardIcon = '';
+        if (jugador.tarjetas) {
+            if (jugador.tarjetas.descalificado) cardIcon = ' 🟥';
+            else if (jugador.tarjetas.expulsado) cardIcon = ' 🟡+🔴';
+            else if (jugador.tarjetas.roja) cardIcon = ' 🔴';
+            else if (jugador.tarjetas.amarillas > 0) cardIcon = ' 🟡'.repeat(jugador.tarjetas.amarillas);
+        }
+        const liberoClass = jugador.libero ? 'libero' : '';
+        return `<div class="posicion-card ${liberoClass}" data-equipo="${equipo}" data-pos="${pos}" data-jugador-id="${jugador.id}">
+                    <div class="pos-num">${getDisplayPosition(pos)}</div>
+                    <div class="player-name-click" data-equipo="${equipo}" data-id="${jugador.id}" data-pos="${pos}">${jugador.nombre}${numero} ${jugador.libero ? '🛡️' : ''} <span class="card-icon" data-equipo="${equipo}" data-pos="${pos}" data-jugador-id="${jugador.id}">${cardIcon || '🟨'}</span></div>
+                </div>`;
+    }
+
+    function renderAlineacion() {
+        // Atacantes (posiciones 2,3,4) van en fila-atacantes; Zagueros (1,6,5) en fila-zagueros
+        document.getElementById('atacantesA').innerHTML = renderPosicion('A',2) + renderPosicion('A',3) + renderPosicion('A',4);
+        document.getElementById('atacantesB').innerHTML = renderPosicion('B',2) + renderPosicion('B',3) + renderPosicion('B',4);
+        document.getElementById('zaguerosA').innerHTML = renderPosicion('A',1) + renderPosicion('A',6) + renderPosicion('A',5);
+        document.getElementById('zaguerosB').innerHTML = renderPosicion('B',1) + renderPosicion('B',6) + renderPosicion('B',5);
 
         document.getElementById('nombreA').innerText = partido.nombreA;
         document.getElementById('nombreB').innerText = partido.nombreB;
@@ -2187,7 +2205,6 @@
         guardarPartido();
     }
 
-    // ======================= LANZAR MONEDA MODIFICADO: SOLO CARA O SELLO =======================
     async function lanzarMoneda() {
         const monedaDiv = document.getElementById('moneda-container');
         monedaDiv.classList.add('girando');
@@ -2202,7 +2219,6 @@
         await alert(`¡${lado}!`);
     }
 
-    // ======================= INICIALIZACIÓN =======================
     function init() {
         cargarPartidoGuardado();
         if (partido.jugadoresA.length === 0) {
@@ -2250,7 +2266,6 @@
             if (e.target.files.length) await importarJSON(e.target.files[0]);
             e.target.value = '';
         });
-        // Pestaña de donación: muestra el panel correspondiente y lo activa visualmente
         document.getElementById('donar-tab').addEventListener('click', () => {
             document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
             document.getElementById('panel-donar').classList.add('active');
@@ -2280,10 +2295,7 @@
         });
         document.getElementById('agregarJugadorA').addEventListener('click', () => agregarJugador('A'));
         document.getElementById('agregarJugadorB').addEventListener('click', () => agregarJugador('B'));
-
         document.getElementById('btn-ayuda').addEventListener('click', mostrarAyuda);
-
-        // Funcionalidad de copiar datos de donación
         document.querySelectorAll('.copy-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 const textToCopy = this.getAttribute('data-clipboard');
@@ -2298,7 +2310,6 @@
 
     init();
 
-    // ======================= MANEJO DE INSTALACIÓN PWA =======================
     let deferredPrompt;
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
@@ -2315,7 +2326,6 @@
         }
     });
 
-    // ======================= REGISTRO DEL SERVICE WORKER MEJORADO =======================
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./sw.js').then(reg => {
             console.log('Service Worker registrado correctamente', reg);
@@ -2329,7 +2339,6 @@
             });
         }).catch(err => console.error('Error al registrar el Service Worker:', err));
     }
-
 })();
 </script>
 </body>
