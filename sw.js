@@ -1,45 +1,44 @@
 /* ============================================================
    SERVICE WORKER - Marcador Voleibol FIVB VNL
-   Estrategia:
-   - Cache-first para el shell (HTML, CSS, JS, iconos)
-   - Network-first para peticiones externas (por si acaso)
-   - Cachea versiones para permitir uso offline
+   Versión: 2.0.0
+   Estrategia: Cache-first con stale-while-revalidate
    ============================================================ */
 
-const CACHE_NAME = 'marcador-voleibol-v1.0.0';
-const RUNTIME_CACHE = 'marcador-voleibol-runtime-v1.0.0';
+const CACHE_NAME = 'marcador-voleibol-v2.0.0';
+const RUNTIME_CACHE = 'marcador-voleibol-runtime-v2.0.0';
 
-// Archivos del "app shell" que se cachean al instalar
+// ✅ Rutas verificadas con los nombres REALES de tus iconos
 const APP_SHELL = [
     './',
     './index.html',
     './manifest.json',
-    './icons/icon-48x48.png',
-    './icons/icon-72x72.png',
-    './icons/icon-96x96.png',
-    './icons/icon-144x144.png',
-    './icons/icon-192z192.png',
-    './icons/icon-512x512.png',
-    //'./icons/icon-maskable-512.png'
+    './icons/launchericon-192x192.png',
+    './icons/launchericon-512x512.png'
 ];
 
 // ================== INSTALL ==================
 self.addEventListener('install', (event) => {
-    console.log('[SW] Instalando...');
+    console.log('[SW] Instalando v2.0.0...');
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then((cache) => {
                 console.log('[SW] Cacheando app shell');
-                return cache.addAll(APP_SHELL);
+                // ✅ Cachear uno por uno para no fallar si falta alguno
+                return Promise.all(
+                    APP_SHELL.map(url =>
+                        cache.add(url).catch(err => {
+                            console.warn(`[SW] No se pudo cachear ${url}:`, err);
+                        })
+                    )
+                );
             })
             .then(() => self.skipWaiting())
-            .catch((err) => console.error('[SW] Error al cachear app shell:', err))
     );
 });
 
 // ================== ACTIVATE ==================
 self.addEventListener('activate', (event) => {
-    console.log('[SW] Activando...');
+    console.log('[SW] Activando v2.0.0...');
     event.waitUntil(
         caches.keys().then((cacheNames) => {
             return Promise.all(
@@ -59,30 +58,23 @@ self.addEventListener('fetch', (event) => {
     const { request } = event;
     const url = new URL(request.url);
 
-    // Ignorar peticiones que no sean GET
     if (request.method !== 'GET') return;
-
-    // Ignorar peticiones a otros orígenes (ej: PayPal, WhatsApp)
     if (url.origin !== self.location.origin) return;
 
-    // Estrategia: Cache-first con fallback a red
     event.respondWith(
         caches.match(request).then((cachedResponse) => {
             if (cachedResponse) {
-                // Actualizar en segundo plano (stale-while-revalidate)
                 fetch(request).then((networkResponse) => {
                     if (networkResponse && networkResponse.status === 200) {
                         caches.open(RUNTIME_CACHE).then((cache) => {
                             cache.put(request, networkResponse.clone());
                         });
                     }
-                }).catch(() => { /* offline, ignorar */ });
+                }).catch(() => {});
                 return cachedResponse;
             }
 
-            // Si no está en cache, ir a la red
             return fetch(request).then((networkResponse) => {
-                // Cachear solo respuestas válidas del mismo origen
                 if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
                     return networkResponse;
                 }
@@ -92,10 +84,13 @@ self.addEventListener('fetch', (event) => {
                 });
                 return networkResponse;
             }).catch(() => {
-                // Si falla la red y es navegación, devolver el index.html cacheado
                 if (request.mode === 'navigate') {
                     return caches.match('./index.html');
                 }
+                return new Response('Recurso no disponible offline', {
+                    status: 503,
+                    statusText: 'Service Unavailable'
+                });
             });
         })
     );
