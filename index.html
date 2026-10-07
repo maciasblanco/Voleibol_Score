@@ -6,13 +6,11 @@
     <title>🏐 Marcador Voleibol · FIVB VNL · Líberos</title>
     <link rel="manifest" href="manifest.json">
 
-    <!-- ✅ PWA: theme-color y apple meta tags -->
     <meta name="theme-color" content="#8e24ad">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Marcador Voleibol">
 
-    <!-- ✅ PWA: iconos (rutas relativas a la raíz) -->
     <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
@@ -766,7 +764,7 @@
             font-size: 0.9rem;
         }
 
-        /* ===== CORRECCIÓN DEL MENÚ DE TARJETAS ===== */
+        /* ===== MENÚ DE TARJETAS MEJORADO ===== */
         #cardMenu {
             display: none;
             position: fixed;
@@ -776,15 +774,20 @@
             padding: 5px 0;
             box-shadow: 0 8px 20px rgba(0,0,0,0.25);
             z-index: 99999;
-            min-width: 160px;
-            font-size: 0.95rem;
+            min-width: 180px;
+            font-size: 1rem;
             animation: modalEntrada 0.15s ease;
         }
+        #cardMenu.visible {
+            display: block;
+        }
         #cardMenu div {
-            padding: 10px 18px;
+            padding: 12px 18px;
             cursor: pointer;
             transition: background 0.1s;
             border-bottom: 1px solid #f0f0f0;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
         #cardMenu div:last-child { border-bottom: none; }
         #cardMenu div:hover { background: #f3e8ff; }
@@ -839,7 +842,6 @@
             </div>
         </div>
 
-        <!-- Aviso de formato actual -->
         <div id="aviso-formato" class="aviso-formato">
             📋 Formato: <span id="formato-texto">25 pts / 5 sets</span> · Set decisivo a <span id="formato-decisivo">15</span> pts
         </div>
@@ -1074,18 +1076,20 @@
 </div>
 
 <div id="cardMenu">
-    <div onclick="seleccionarTarjeta('yellow')">🟡 Amarilla</div>
-    <div onclick="seleccionarTarjeta('red')">🔴 Roja</div>
-    <div onclick="seleccionarTarjeta('expulsion')">🟡+🔴 Expulsión</div>
-    <div onclick="seleccionarTarjeta('disqualification')">🟥 Descalificar</div>
+    <div data-tipo="yellow">🟡 Amarilla</div>
+    <div data-tipo="red">🔴 Roja</div>
+    <div data-tipo="expulsion">🟡+🔴 Expulsión</div>
+    <div data-tipo="disqualification">🟥 Descalificar</div>
 </div>
 
 <script>
 /* ============================================================================
    MARCADOR VOLEIBOL FIVB VNL - JavaScript principal
    VERSIÓN FINAL CORREGIDA:
-   - Set decisivo correcto (15 pts para formato 25/5 y 21/3)
-   - Aviso Stats OFF solo aparece cuando está realmente desactivado
+   - Set decisivo correcto (15 pts para 25/5 y 21/3)
+   - Aviso Stats OFF solo cuando está desactivado
+   - Tarjeta gris ⬜ por defecto
+   - Menú de tarjetas funcional (touchend, posición correcta)
    - SW registrado con ruta robusta
    ============================================================================ */
 (function() {
@@ -1109,7 +1113,6 @@
         { id: 'otro_error',   icono: '🚫', nombre: 'Otro error' }
     ];
 
-    // ======================= FORMATOS PREDEFINIDOS =======================
     const FORMATOS_PREDEFINIDOS = {
         '25-5': { puntos: 25, sets: 5, etiqueta: '25 pts / 5 sets' },
         '21-3': { puntos: 21, sets: 3, etiqueta: '21 pts / 3 sets' },
@@ -1511,10 +1514,6 @@
     const puntosValor = document.getElementById('puntos-valor');
     const setsValor = document.getElementById('sets-valor');
 
-    // ✅ CORREGIDO: Set decisivo según regla FIVB
-    // - Formato 25/5 → 5º set a 15
-    // - Formato 21/3 → 3º set a 15
-    // - Otros formatos → mitad redondeada hacia arriba (mínimo 5)
     function puntosSetDecisivo() {
         if (totalSets <= 1) return puntosPorSet;
         if (puntosPorSet === 25 && totalSets === 5) return 15;
@@ -1535,7 +1534,6 @@
         actualizarAvisoFormato();
     }
 
-    // ✅ CORREGIDO: Aviso de Stats OFF solo aparece cuando realmente está OFF
     function actualizarAvisoStats() {
         const aviso = document.getElementById('aviso-stats-off');
         if (!aviso) return;
@@ -1602,7 +1600,6 @@
         }
     });
 
-    // ✅ CORREGIDO: IDs más cortos (más limpios)
     function generarId() {
         return Date.now().toString(36) + Math.random().toString(36).substr(2, 6);
     }
@@ -2262,18 +2259,26 @@
         const jugadorId = alin[pos-1];
         const jugador = jugadorId ? getJugadorById(equipo, jugadorId) : null;
         if (!jugador) return `<div class="posicion-card"><div class="pos-num">${getDisplayPosition(pos)}</div><div>Vacío</div></div>`;
+
         const numero = jugador.numero ? ` #${jugador.numero}` : '';
-        let cardIcon = '';
+
+        // ✅ Tarjeta gris por defecto
+        let cardIcon = '⬜';
         if (jugador.tarjetas) {
-            if (jugador.tarjetas.descalificado) cardIcon = ' 🟥';
-            else if (jugador.tarjetas.expulsado) cardIcon = ' 🟡+🔴';
-            else if (jugador.tarjetas.roja) cardIcon = ' 🔴';
-            else if (jugador.tarjetas.amarillas > 0) cardIcon = ' 🟡'.repeat(jugador.tarjetas.amarillas);
+            if (jugador.tarjetas.descalificado) cardIcon = '🟥';
+            else if (jugador.tarjetas.expulsado) cardIcon = '🟡🔴';
+            else if (jugador.tarjetas.roja) cardIcon = '🔴';
+            else if (jugador.tarjetas.amarillas > 0) cardIcon = '🟡'.repeat(Math.min(jugador.tarjetas.amarillas, 2));
         }
+
         const liberoClass = jugador.libero ? 'libero' : '';
+
         return `<div class="posicion-card ${liberoClass}" data-equipo="${equipo}" data-pos="${pos}" data-jugador-id="${jugador.id}">
                     <div class="pos-num">${getDisplayPosition(pos)}</div>
-                    <div class="player-name-click" data-equipo="${equipo}" data-id="${jugador.id}" data-pos="${pos}">${escapeHtml(jugador.nombre)}${numero} ${jugador.libero ? '🛡️' : ''} <span class="card-icon" data-equipo="${equipo}" data-pos="${pos}" data-jugador-id="${jugador.id}">${cardIcon || '🟨'}</span></div>
+                    <div class="player-name-click" data-equipo="${equipo}" data-id="${jugador.id}" data-pos="${pos}">
+                        ${escapeHtml(jugador.nombre)}${numero} ${jugador.libero ? '🛡️' : ''}
+                        <span class="card-icon" data-equipo="${equipo}" data-pos="${pos}" data-jugador-id="${jugador.id}" title="Tarjetas">${cardIcon}</span>
+                    </div>
                 </div>`;
     }
 
@@ -2320,8 +2325,12 @@
         }
         vidrioDiv.innerText = vidrioHTML;
 
+        // ✅ Listener del ícono de tarjeta: robusto con touchend + click, evita duplicados
         document.querySelectorAll('.card-icon').forEach(icon => {
-            icon.addEventListener('click', function(e) {
+            if (icon.dataset.cardListenerAttached === 'true') return;
+            icon.dataset.cardListenerAttached = 'true';
+
+            const handler = function(e) {
                 e.stopPropagation();
                 e.preventDefault();
                 closeSubsMenu();
@@ -2330,15 +2339,35 @@
 
                 const rect = this.getBoundingClientRect();
                 const menu = document.getElementById('cardMenu');
-                menu.style.left = rect.left + 'px';
-                menu.style.top = (rect.bottom + window.scrollY) + 'px';
+
+                let top = rect.bottom + 4;
+                let left = rect.left;
+
+                const menuWidth = 200;
+                if (left + menuWidth > window.innerWidth) {
+                    left = window.innerWidth - menuWidth - 10;
+                }
+                if (left < 4) left = 4;
+
+                menu.style.left = left + 'px';
+                menu.style.top = top + 'px';
+                menu.classList.add('visible');
                 menu.style.display = 'block';
-            });
+
+                const menuHeight = menu.offsetHeight;
+                if (top + menuHeight > window.innerHeight) {
+                    menu.style.top = (rect.top - menuHeight - 4) + 'px';
+                }
+            };
+
+            icon.addEventListener('click', handler);
+            icon.addEventListener('touchend', handler, { passive: false });
         });
 
         document.querySelectorAll('.player-name-click').forEach(nameDiv => {
             nameDiv.addEventListener('click', (e) => {
                 e.stopPropagation();
+                document.getElementById('cardMenu').classList.remove('visible');
                 document.getElementById('cardMenu').style.display = 'none';
                 const equipo = nameDiv.getAttribute('data-equipo');
                 const jugadorId = nameDiv.getAttribute('data-id');
@@ -2516,7 +2545,7 @@
         }
     }
 
-    // ======================= GENERAR TEXTO DE ESTADÍSTICAS =======================
+    // ======================= TEXTO ESTADÍSTICAS =======================
     function generarTextoEstadisticas() {
         if (partido.registroPuntos.length === 0) {
             return '🏐 Aún no hay puntos registrados en este partido.';
@@ -2796,19 +2825,29 @@
     document.getElementById('whatsapp-json')?.addEventListener('click', enviarWhatsAppJSON);
 
     // ======================= TARJETAS =======================
-    window.seleccionarTarjeta = async function(tipo) {
+    async function seleccionarTarjeta(tipo) {
+        const menu = document.getElementById('cardMenu');
+        menu.classList.remove('visible');
+        menu.style.display = 'none';
+
         if (partidoFinalizado()) { await alert('El partido ya ha finalizado.'); return; }
         if (!currentCardTarget) return;
+
         const equipo = currentCardTarget.dataset.equipo;
         const jugadorId = currentCardTarget.dataset.jugadorId;
         const jugador = getJugadorById(equipo, jugadorId);
         if (!jugador) return;
-        if (!jugador.tarjetas) jugador.tarjetas = { amarillas: 0, roja: false, expulsado: false, descalificado: false };
+
+        if (!jugador.tarjetas) {
+            jugador.tarjetas = { amarillas: 0, roja: false, expulsado: false, descalificado: false };
+        }
 
         guardarHistorial('tarjeta');
 
         switch(tipo) {
-            case 'yellow': jugador.tarjetas.amarillas = (jugador.tarjetas.amarillas || 0) + 1; break;
+            case 'yellow':
+                jugador.tarjetas.amarillas = (jugador.tarjetas.amarillas || 0) + 1;
+                break;
             case 'red':
                 jugador.tarjetas.roja = true;
                 const rival = equipo === 'A' ? 'B' : 'A';
@@ -2829,17 +2868,56 @@
                 if (idx2 !== -1) alin2[idx2] = null;
                 break;
         }
+
         guardarPartido();
         renderAlineacion();
-        document.getElementById('cardMenu').style.display = 'none';
-    };
+        actualizarEstadoPartido();
+    }
 
+    // ✅ Asignar listeners a las opciones del menú (una sola vez, al cargar)
+    document.querySelectorAll('#cardMenu div').forEach(div => {
+        div.addEventListener('click', function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            const tipo = this.dataset.tipo;
+            if (tipo) seleccionarTarjeta(tipo);
+        });
+        div.addEventListener('touchend', function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            const tipo = this.dataset.tipo;
+            if (tipo) seleccionarTarjeta(tipo);
+        }, { passive: false });
+    });
+
+    // ✅ Cerrar menús al hacer click fuera, scroll o resize
     document.addEventListener('click', function(e) {
         const menu = document.getElementById('cardMenu');
-        if (menu.style.display === 'block' && !menu.contains(e.target) && !e.target.classList.contains('card-icon')) {
-            menu.style.display = 'none';
+        if (menu && menu.style.display === 'block') {
+            const isCardIcon = e.target.classList.contains('card-icon');
+            const isInsideMenu = menu.contains(e.target);
+            if (!isCardIcon && !isInsideMenu) {
+                menu.classList.remove('visible');
+                menu.style.display = 'none';
+            }
         }
         if (activeSubsMenu && !activeSubsMenu.contains(e.target)) closeSubsMenu();
+    });
+
+    window.addEventListener('scroll', () => {
+        const menu = document.getElementById('cardMenu');
+        if (menu && menu.style.display === 'block') {
+            menu.classList.remove('visible');
+            menu.style.display = 'none';
+        }
+    }, { passive: true });
+
+    window.addEventListener('resize', () => {
+        const menu = document.getElementById('cardMenu');
+        if (menu && menu.style.display === 'block') {
+            menu.classList.remove('visible');
+            menu.style.display = 'none';
+        }
     });
 
     function actualizarEstadoPartido() {
@@ -3051,7 +3129,6 @@
         if (statsGuardado !== null) {
             registroStatsActivo = statsGuardado === 'true';
         }
-        // ✅ CORREGIDO: Actualiza switches y aviso DESPUÉS de leer todo
         actualizarSwitches();
     }
 
@@ -3144,7 +3221,7 @@
                 <li><strong>Registro:</strong> Pestaña 📊 para ver todos los puntos, filtrar, compartir, enviar por WhatsApp, email, exportar a CSV.</li>
                 <li><strong>Compartir JSON:</strong> Pestaña 📤 para compartir el partido completo a otro dispositivo.</li>
                 <li><strong>Sustituciones:</strong> Toca el nombre del jugador en cancha.</li>
-                <li><strong>Tarjetas:</strong> Toca el ícono 🟨 junto al nombre.</li>
+                <li><strong>Tarjetas:</strong> Toca el ícono ⬜ (gris) o 🟡/🔴 junto al nombre. Cambia a amarillo, rojo, expulsión o descalificación.</li>
                 <li><strong>Tiempos:</strong> Botones "⏸️ Tiempo [Equipo]". 2 por set, 30s.</li>
                 <li><strong>Rotación:</strong> Automática al ganar punto sin saque.</li>
                 <li><strong>Undo:</strong> Revierte punto, sustitución, tiempo o tarjeta.</li>
@@ -3347,7 +3424,6 @@
         }
     });
 
-    // ✅ CORREGIDO: SW con ruta robusta (funciona en GitHub Pages subdirectorio)
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             const swUrl = new URL('sw.js', window.location.href).href;
