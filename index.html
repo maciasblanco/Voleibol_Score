@@ -5,6 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>🏐 Marcador Voleibol · FIVB VNL · Líberos</title>
     <link rel="manifest" href="manifest.json">
+
+    <!-- ✅ PWA: theme-color y apple meta tags -->
+    <meta name="theme-color" content="#8e24ad">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Marcador Voleibol">
+
+    <!-- ✅ PWA: iconos (rutas relativas a la raíz) -->
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512.png">
+
     <style>
         :root {
             --primary-purple: #8e24ad;
@@ -955,7 +968,7 @@
             <input type="number" id="config-puntos-custom" value="15" min="1" max="99">
             <label class="mt-4">Cantidad de sets:</label>
             <input type="number" id="config-sets-custom" value="3" min="1" max="9">
-            <p class="text-muted">El set decisivo se juega a la mitad de puntos (ej: si son 25 pts, el 5º set es a 15).</p>
+            <p class="text-muted">El set decisivo se juega a 15 puntos si el set normal es a 25, o a la mitad redondeada hacia arriba en otros formatos.</p>
         </div>
 
         <h3>Equipo A (máx. 15 jugadores)</h3>
@@ -1070,7 +1083,10 @@
 <script>
 /* ============================================================================
    MARCADOR VOLEIBOL FIVB VNL - JavaScript principal
-   VERSIÓN FINAL: formato personalizable, nombre de equipo, stats ON/OFF
+   VERSIÓN FINAL CORREGIDA:
+   - Set decisivo correcto (15 pts para formato 25/5 y 21/3)
+   - Aviso Stats OFF solo aparece cuando está realmente desactivado
+   - SW registrado con ruta robusta
    ============================================================================ */
 (function() {
     'use strict';
@@ -1495,10 +1511,15 @@
     const puntosValor = document.getElementById('puntos-valor');
     const setsValor = document.getElementById('sets-valor');
 
-    // ✅ NUEVO: Calcular puntos del set decisivo (mitad del puntaje, mínimo 5)
+    // ✅ CORREGIDO: Set decisivo según regla FIVB
+    // - Formato 25/5 → 5º set a 15
+    // - Formato 21/3 → 3º set a 15
+    // - Otros formatos → mitad redondeada hacia arriba (mínimo 5)
     function puntosSetDecisivo() {
         if (totalSets <= 1) return puntosPorSet;
-        return Math.max(5, Math.floor(puntosPorSet / 2));
+        if (puntosPorSet === 25 && totalSets === 5) return 15;
+        if (puntosPorSet === 21 && totalSets === 3) return 15;
+        return Math.max(5, Math.ceil(puntosPorSet / 2));
     }
 
     function actualizarSwitches() {
@@ -1514,18 +1535,22 @@
         actualizarAvisoFormato();
     }
 
+    // ✅ CORREGIDO: Aviso de Stats OFF solo aparece cuando realmente está OFF
     function actualizarAvisoStats() {
         const aviso = document.getElementById('aviso-stats-off');
-        if (aviso) aviso.style.display = registroStatsActivo ? 'none' : 'block';
+        if (!aviso) return;
+        if (registroStatsActivo) {
+            aviso.style.display = 'none';
+        } else {
+            aviso.style.display = 'block';
+        }
     }
 
-    // ✅ NUEVO: Mostrar el formato actual en el panel de juego
     function actualizarAvisoFormato() {
         const texto = document.getElementById('formato-texto');
         const decisivo = document.getElementById('formato-decisivo');
         if (texto) {
             let etiqueta = `${puntosPorSet} pts / ${totalSets} set${totalSets > 1 ? 's' : ''}`;
-            // Buscar si coincide con un predefinido
             for (const key in FORMATOS_PREDEFINIDOS) {
                 const f = FORMATOS_PREDEFINIDOS[key];
                 if (f.puntos === puntosPorSet && f.sets === totalSets) {
@@ -1568,7 +1593,6 @@
         actualizarAvisoStats();
     });
 
-    // ✅ NUEVO: Listener del selector de formato en configuración
     document.getElementById('config-formato').addEventListener('change', function() {
         const customGroup = document.getElementById('custom-format-group');
         if (this.value === 'custom') {
@@ -1578,7 +1602,10 @@
         }
     });
 
-    function generarId() { return Date.now() + Math.random().toString(36).substr(2, 5); }
+    // ✅ CORREGIDO: IDs más cortos (más limpios)
+    function generarId() {
+        return Date.now().toString(36) + Math.random().toString(36).substr(2, 6);
+    }
 
     function initSubstitutionTracking(equipo) {
         const alineacion = equipo === 'A' ? partido.alineacionA : partido.alineacionB;
@@ -1675,7 +1702,6 @@
         actualizarEstadoPartido();
     }
 
-    // ✅ MODIFICADO: El set decisivo se juega a la mitad del puntaje
     function puntosMinimosSetActual() {
         const esSetDecisivo = (partido.setActual === totalSets && totalSets > 1);
         if (esSetDecisivo) {
@@ -1729,7 +1755,6 @@
             return;
         }
 
-        // Si el switch de estadísticas está OFF, se suma el punto directo sin modal
         if (!registroStatsActivo) {
             guardarHistorial('punto_rapido');
             partido.registroPuntos.push({
@@ -1920,7 +1945,6 @@
         }, 1000);
     }
 
-    // ✅ NUEVO: Función para forzar cierre de set con mensajes claros
     async function forzarCierreSet() {
         if (partidoFinalizado()) {
             await alert('El partido ya ha finalizado.');
@@ -1933,7 +1957,6 @@
         const puntosB = partido.puntos.B;
         const esSetDecisivo = (partido.setActual === totalSets && totalSets > 1);
 
-        // Diagnóstico claro
         if (puntosA < puntosMinimos && puntosB < puntosMinimos) {
             await alert(`⚠️ Aún no se alcanzó el mínimo de ${puntosMinimos} puntos${esSetDecisivo ? ' (set decisivo)' : ''}.\n\nMarcador actual: ${puntosA}-${puntosB}\nSet: ${partido.setActual}/${totalSets}`);
             return;
@@ -1944,7 +1967,6 @@
             return;
         }
 
-        // Si llegó aquí, se puede cerrar
         const ganadorSet = puntosA > puntosB ? 'A' : 'B';
         const nombreGanador = ganadorSet === 'A' ? partido.nombreA : partido.nombreB;
         const ok = await confirm(`¿Forzar cierre del Set ${partido.setActual}?\n\nMarcador: ${puntosA}-${puntosB}\nGanador: ${nombreGanador}`);
@@ -2298,17 +2320,14 @@
         }
         vidrioDiv.innerText = vidrioHTML;
 
-        // ===== EVENTOS DE TARJETAS CORREGIDOS =====
         document.querySelectorAll('.card-icon').forEach(icon => {
             icon.addEventListener('click', function(e) {
                 e.stopPropagation();
                 e.preventDefault();
                 closeSubsMenu();
-                
-                // Guardar el objetivo actual
+
                 currentCardTarget = this;
-                
-                // Posicionar el menú
+
                 const rect = this.getBoundingClientRect();
                 const menu = document.getElementById('cardMenu');
                 menu.style.left = rect.left + 'px';
@@ -2815,7 +2834,6 @@
         document.getElementById('cardMenu').style.display = 'none';
     };
 
-    // ===== CIERRE DEL MENÚ DE TARJETAS =====
     document.addEventListener('click', function(e) {
         const menu = document.getElementById('cardMenu');
         if (menu.style.display === 'block' && !menu.contains(e.target) && !e.target.classList.contains('card-icon')) {
@@ -3033,6 +3051,7 @@
         if (statsGuardado !== null) {
             registroStatsActivo = statsGuardado === 'true';
         }
+        // ✅ CORREGIDO: Actualiza switches y aviso DESPUÉS de leer todo
         actualizarSwitches();
     }
 
@@ -3121,7 +3140,7 @@
                 <li><strong>Error del rival:</strong> En el modal de punto, elige "❌ Error del rival" y luego selecciona quién falló. La <strong>falta de rotación</strong> se asigna automáticamente al 👔 Entrenador.</li>
                 <li><strong>Líbero:</strong> Solo puede registrar tipo 🛡️ Defensa. Se selecciona automáticamente al elegirlo.</li>
                 <li><strong>📊 Switch Stats ON/OFF:</strong> Con OFF, los puntos se suman al marcador sin abrir el modal (modo rápido). Esos puntos se marcan como "Sin registro".</li>
-                <li><strong>📋 Formato personalizable:</strong> En Configuración puedes elegir 25-5, 21-3, 15-5, 11-3, 5-1 o Personalizado. El set decisivo se juega a la mitad del puntaje.</li>
+                <li><strong>📋 Formato personalizable:</strong> En Configuración puedes elegir 25-5, 21-3, 15-5, 11-3, 5-1 o Personalizado. El set decisivo se juega a 15 puntos si el set normal es a 25, o a la mitad redondeada hacia arriba en otros formatos.</li>
                 <li><strong>Registro:</strong> Pestaña 📊 para ver todos los puntos, filtrar, compartir, enviar por WhatsApp, email, exportar a CSV.</li>
                 <li><strong>Compartir JSON:</strong> Pestaña 📤 para compartir el partido completo a otro dispositivo.</li>
                 <li><strong>Sustituciones:</strong> Toca el nombre del jugador en cancha.</li>
@@ -3164,7 +3183,6 @@
         actualizarSwitches();
         guardarPartido();
 
-        // Sincronizar selector de formato con el formato actual
         const formatoSel = document.getElementById('config-formato');
         let formatoEncontrado = false;
         for (const key in FORMATOS_PREDEFINIDOS) {
@@ -3203,10 +3221,9 @@
             document.getElementById('donar-tab').classList.add('active');
         });
         document.getElementById('guardar-config').addEventListener('click', async () => {
-            // ✅ NUEVO: Aplicar formato seleccionado
             const formatoSel = document.getElementById('config-formato').value;
             let nuevosPuntos, nuevosSets;
-            
+
             if (formatoSel === 'custom') {
                 nuevosPuntos = parseInt(document.getElementById('config-puntos-custom').value);
                 nuevosSets = parseInt(document.getElementById('config-sets-custom').value);
@@ -3215,7 +3232,7 @@
                 nuevosPuntos = formato.puntos;
                 nuevosSets = formato.sets;
             }
-            
+
             if (nuevosPuntos < 1 || nuevosPuntos > 99) {
                 await alert('Los puntos por set deben estar entre 1 y 99.');
                 return;
@@ -3224,26 +3241,25 @@
                 await alert('La cantidad de sets debe estar entre 1 y 9.');
                 return;
             }
-            
+
             const cambioFormato = (nuevosPuntos !== puntosPorSet || nuevosSets !== totalSets);
-            
+
             if (cambioFormato) {
                 const ok = await confirm(`¿Cambiar el formato a ${nuevosPuntos} pts / ${nuevosSets} set${nuevosSets > 1 ? 's' : ''}?\n\nSe reiniciará el partido actual.`);
                 if (!ok) return;
                 puntosPorSet = nuevosPuntos;
                 totalSets = nuevosSets;
             }
-            
+
             partido.nombreA = document.getElementById('config-nombreA').value;
             partido.nombreB = document.getElementById('config-nombreB').value;
             const setInicial = parseInt(document.getElementById('config-set').value);
             if (!isNaN(setInicial) && setInicial >= 1 && setInicial <= totalSets) partido.setActual = setInicial;
-            
+
             partido.alineacionA = inicializarAlineacion('A');
             partido.alineacionB = inicializarAlineacion('B');
-            
+
             if (cambioFormato) {
-                // Reiniciar el partido con el nuevo formato
                 partido.setActual = 1;
                 partido.puntos = { A: 0, B: 0 };
                 partido.setsGanados = { A: 0, B: 0 };
@@ -3255,7 +3271,7 @@
                 resetTarjetas(partido.jugadoresA);
                 resetTarjetas(partido.jugadoresB);
             }
-            
+
             initSetSubstitutions();
             guardarPartido();
             actualizarSwitches();
@@ -3273,7 +3289,6 @@
                 tab.classList.add('active');
                 if (panelId === 'panel-config') {
                     renderConfig();
-                    // Sincronizar selector de formato
                     const formatoSel = document.getElementById('config-formato');
                     let encontrado = false;
                     for (const key in FORMATOS_PREDEFINIDOS) {
@@ -3292,7 +3307,6 @@
                     } else {
                         document.getElementById('custom-format-group').style.display = 'none';
                     }
-                    // Sincronizar otros campos
                     document.getElementById('config-nombreA').value = partido.nombreA;
                     document.getElementById('config-nombreB').value = partido.nombreB;
                     document.getElementById('config-set').value = partido.setActual;
@@ -3333,18 +3347,22 @@
         }
     });
 
+    // ✅ CORREGIDO: SW con ruta robusta (funciona en GitHub Pages subdirectorio)
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js').then(reg => {
-            console.log('Service Worker registrado', reg);
-            reg.addEventListener('updatefound', () => {
-                const newWorker = reg.installing;
-                newWorker.addEventListener('statechange', () => {
-                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                        alert('¡Nueva versión disponible! Actualiza la página.');
-                    }
+        window.addEventListener('load', () => {
+            const swUrl = new URL('sw.js', window.location.href).href;
+            navigator.serviceWorker.register(swUrl, { scope: './' }).then(reg => {
+                console.log('✅ Service Worker registrado en:', reg.scope);
+                reg.addEventListener('updatefound', () => {
+                    const newWorker = reg.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            alert('¡Nueva versión disponible! Recarga la página.');
+                        }
+                    });
                 });
-            });
-        }).catch(err => console.error('Error SW:', err));
+            }).catch(err => console.error('❌ Error SW:', err));
+        });
     }
 })();
 </script>
